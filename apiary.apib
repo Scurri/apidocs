@@ -1,0 +1,1249 @@
+FORMAT: 1A9
+HOST: https://apidemo.scurri.co.uk/v1
+
+# Scurri API
+
+The Scurri Platform API is a RESTful web service that offers import
+and update functionality for consignments, documents and manifests.
+
+## HTTP Codes
+
+HTTP codes are used to differentiate between successful and failed
+responses. As per the HTTP standard: 20x codes are for successful
+requests, 40x codes for errors with validation or permissions, 50x
+codes for unexpected internal server errors.
+
+
+## Authentication
+
+All requests must be authenticated using [Basic
+Auth](https://en.wikipedia.org/wiki/Basic_access_authentication#Client_side).
+
+With Basic Auth, you have to send the username and password
+**base64-encoded** in the standard Basic manner, e.g. `Authorization:
+Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==`.
+
+Failed requests will return 401 HTTP code with `WWW-Authenticate:
+Basic` response header.
+
+## Request format
+
+All body payloads must be in JSON format, unless stated otherwise.
+
+As a result, the `Content-Type` header must be set to `application/json`.
+
+## Using the Scurri API
+
+### General
+
+The most important features of the Scurri API are:
+
+- Importing consignments
+- Getting the necessary documents (label)
+- Manifesting consignments
+
+The Scurri API works only on top of HTTPS, so that the connection is
+encrypted.
+
+The Scurri API is currently at version 1. This means that all URLs
+should be prefixed with the path `/v1/`.
+
+### Concepts
+
+Each company is assigned a **slug**, which is an identifier for this
+company and is used in all URLs of this API. The slug can be found in
+the URLs used in Scurri: it is the value after the path `company` and
+until the next forward slash (`/`). That is, in the URL
+`/company/my-company/manifests` the slug is the value `my-company`.
+
+Each consignment is identified by a unique **identifier** which you
+should provide. This identifier should be unique across all of your
+consignments. If all of your orders correspond to a single
+consignment, then the order number is a good candidate for this.
+
+### Consignment Lifecycle
+
+#### Importing consignments
+
+The first step is actually importing consignments into Scurri. You can
+import them one by one or batch import them. Scurri has optimized the
+import process to support importing thousands of consignments in one
+API call.
+
+#### Getting the label for a consignment
+
+After a consignment has been imported, Scurri will automatically
+allocate it to a carrier and a service based on the shipment rules you
+have defined or the values you have specified in the API.
+
+Then, Scurri will try to validate that the consignment meets the
+criteria for using the allocated carrier and service, e.g. the weight
+and dimension limits.
+
+If the consignment does not fail the validation step, you can download
+its label and documentation for customs, either as PDF documents or
+PNG. The latter is useful for embedding the label in another document.
+
+If the consignment had failed the validation step, though, you would
+get an error back with the reason the validation failed.
+
+#### Manifesting consignments
+
+The last step is marking consignments as manifested. When you do this,
+Scurri will generate the manifest documentation that you have to
+hand-in to the carrier and at the same time notify the carrier. A
+consignment that has been marked as manifested can no longer be
+edited.
+
+# Carriers [/company/{company_slug}/carriers/]
+
+The Carriers API allows you to query Scurri for the carriers that are
+enabled in your account.
+
+The result contains the identifier for each carrier, which you can use
+in the rest of the API calls, whenever a **Carrier** needs to be
+specified.  The identifier will never change, so this can be called
+once to get the values.
+
+## List all the carriers for the logged in user [GET]
+
++ Authorization (Basic)
++ Parameters
+    + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
++ Request
+    + Headers
+
+            Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
+
++ Response 200 (application/json)
+
+            [
+                {
+                    "identifier": "Generic Carrier",
+                    "name": "Generic Carrier"
+                }
+            ]
+
+# Carrier Services [/company/{company_slug}/carrierservices/]
+
+The CarrierServices API allows you to retrieve a list of services that have been enabled in your account.
+
+The result contains the identifier for each service, which you can use in the rest of the API calls, whenever a **Service** needs to be specified.
+
+## List all the carrier services for the logged in user [GET]
+
++ Parameters
+    + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
++ Request
+    + Headers
+
+            Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
+
++ Response 200 (application/json)
+
+            [
+                {
+                    "carrier_id": "Generic Carrier",
+                    "identifier": "Generic Carrier|Generic International Service GCINT",
+                    "name": "Generic International Service"
+                },
+                {
+                    "carrier_id": "Generic Carrier",
+                    "identifier": "Generic Carrier|Generic Domestic Service GDOM",
+                    "name": "Generic Domestic Service"
+                }
+            ]
+
+# Warehouses [/company/{company_slug}/warehouses/]
+
+The Warehouses API allows you to retrieve a list of warehouses that you have access to (within a company).
+
+The result contains the identifier for each warehouse, which you can use in the rest of the API calls, whenever a **Warehouse** needs to be specified.
+
+## List all the warehouses the user has access to [GET]
+
++ Parameters
+    + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
++ Request
+    + Headers
+
+            Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
+
++ Response 200 (application/json)
+
+            [
+                {
+                    "identifier": "api-test-company|Test Warehouse",
+                    "name": "Test Warehouse"
+                }
+            ]
+
+# Group Consignments
+
+## Consignments Collection [/company/{company_slug}/consignments/]
+
+This group of API calls allow you to interact with your consignments in Scurri. You can list and search through them, create new ones, get their status and print the necessary documentation (labels and custom invoices, when needed).
+
++ Parameters
+    + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
+
+### Get the list of created consignments [GET /company/{company_slug}/consignments/{?offset,limit,identifier,status}]
+
+You can get use this API call to retrieve the list of consignments in Scurri.
+
+Pagination is provided via the `offset` and `limit` GET parameters.
+
+You can also use this API call to search for consignments using specific criteria, either for a specific `identifier` or for consignments of a specific `status`.
+
++ Parameters
+    + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
+    + offset (int,optional) - The offset for any pagination.
+        + Default: 0
+    + limit (int,optional) - How many results to return for a request.
+        + Default: 10
+    + identifier (string,optional) - Search for the consignment with the given identifier.
+    + status (enum[string],optional) - Search for consignments with a specific status.
+        + Members
+             + `Unallocated`
+             + `Allocated`
+             + `Printed`
+             + `Manifested`
+             + `Despatched`
+             + `Cancelled`
+
++ Request
+    + Headers
+
+                Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
+
++ Response 200 (application/json)
+
+            {
+                "count": 1,
+                "next": null,
+                "results": [
+                    {
+                        "carrier": "Generic Carrier",
+                        "consignment_number": null,
+                        "create_date": "2016-03-28T11:53:31+0000",
+                        "currency": "GBP",
+                        "current_status": {
+                            "rejection_reason": null,
+                            "short_form": "Allocated",
+                            "status": "Carrier and service allocated"
+                        },
+                        "delivery_instructions": "",
+                        "identifier": "8a12630db404424b943e131ce4ee3976",
+                        "invoice": {
+                            "incoterm": ""
+                        },
+                        "options": {
+                            "package_type": null
+                        },
+                        "order_number": "8384832",
+                        "order_value": null,
+                        "packages": [
+                            {
+                                "description": "Jeans",
+                                "height": 0.5,
+                                "items": [
+                                    {
+                                        "country_of_origin": "GB",
+                                        "harmonisation_code": "5201",
+                                        "name": "Jeans",
+                                        "quantity": 1,
+                                        "sku": "822 JEANS",
+                                        "value": 25.55,
+                                        "weight": 1.0
+                                    }
+                                ],
+                                "length": 10.0,
+                                "tracking_number": null,
+                                "width": 12.2
+                            }
+                        ],
+                        "recipient": {
+                            "address": {
+                                "address1": "Innovation House",
+                                "address2": "The Bullring",
+                                "address3": "",
+                                "city": "Wexford",
+                                "country": "IE",
+                                "postcode": "Y35 DW6E",
+                                "state": "Wexford",
+                                "store_code": ""
+                            },
+                            "company_name": "Scurri",
+                            "contact_number": "072 8848292234",
+                            "email_address": "john@scurri.com",
+                            "first_name": "",
+                            "last_name": "John Doe",
+                            "name": "John Doe"
+                        },
+                        "rules_package_type": "Shipment 44147 : None",
+                        "service": "Generic International Service",
+                        "service_id": "Generic Carrier|Generic International Service GCINT",
+                        "shipping_method": "",
+                        "tracking_url": "",
+                        "warehouse_id": "api-test-company|Test Warehouse"
+                    }
+                ]
+            }
+
+
+### Create a New Consignment [POST]
+
+You can use this API call to create one or more new consignments. In both cases, you have to specify a list in the body.
+
+Scurri will do its best to store the data in the database and return a successful message, instead of validating the data against a carrier.
+That is, the validation process with a carrier is a step performed after a consignment has been created successfully.
+The reason is that this way Scurri can decouple importing a consignment from allocating it to a specific carrier, each of which has different requirements.
+
+What this means in practice is that a success respons for this API call does not mean that the consignment has been allocated to a carrier and service successfully.
+
+Additionally, most users will want their configured rules to set allocate a consignment to a carrier and service. These users should leave the carrier-related fields empty. If any of those are specified in the request, then they will take precedence over the rules.
+
+Another thing to keep in mind is that, in the case of batch creating consignments, Scurri will run any allocation processes asynchronously. As a result, a label will not be available straight away.
+
+You can take a look at the [GET consignment](#reference/consignments/consignments/get-a-single-consignment) for the payload of this request.
+
++ Request (application/json)
+    + Headers
+
+            Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
+
+    + Body
+
+            [
+              {
+                "carrier": "Generic Carrier",
+                "service_id": "Generic Carrier|Generic International Service GCINT",
+                "identifier": "8a12630db404424b943e131ce4ee3976",
+                "packages": [
+                  {
+                    "items": [
+                      {
+                        "weight": 1.0,
+                        "value": 25.55,
+                        "fabric_content": "silk",
+                        "harmonisation_code": "5201",
+                        "country_of_origin": "GB",
+                        "sku": "822 JEANS",
+                        "quantity": 1,
+                        "name": "Jeans"
+                      }
+                    ],
+                    "length": 10.0,
+                    "height": 0.5,
+                    "width": 12.2
+                  }
+                ],
+                "recipient": {
+                  "address": {
+                    "country": "IE",
+                    "postcode": "Y35 DW6E",
+                    "city": "Wexford",
+                    "address2": "The Bullring",
+                    "address1": "Innovation House",
+                    "state": "Wexford"
+                  },
+                  "contact_number": "072 8848292234",
+                  "email_address": "john@scurri.com",
+                  "company_name": "Scurri",
+                  "name": "John Doe"
+                },
+                "order_number": "8384832"
+              }
+            ]
+
++ Response 201 (application/json)
+
+    The response has 2 entries: one is a dictionary for errors and one a list of successful imports.
+
+    + Body
+
+            {
+               "errors": {},
+                "success": [
+                    "8a12630db404424b943e131ce4ee3976"
+                ]
+            }
+
+## Consignments [/company/{company_slug}/consignment/{consignment_id}/]
+
++ Parameters
+    + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
+    + consignment_id (string) - The consignment identifier for the consignment
+
+
+#### Get a single consignment [GET]
+
+You can use this API call to get all details for the specified consignment.
+
+For instance, this is how you can query the status of a consignment and get any error messages from the allocation phase.
+
++ Request (application/json)
+    + Headers
+
+            Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
+
++ Response 200 (application/json)
+
+    The response has the details of the specified consignment.
+
+    + Body
+
+            {
+                "carrier": "Generic Carrier",
+                "consignment_number": null,
+                "create_date": "2016-03-28T11:53:31+0000",
+                "currency": "GBP",
+                "current_status": {
+                    "rejection_reason": null,
+                    "short_form": "Allocated",
+                    "status": "Carrier and service allocated"
+                },
+                "delivery_instructions": "",
+                "identifier": "8a12630db404424b943e131ce4ee3976",
+                "invoice": {
+                    "incoterm": ""
+                },
+                "options": {
+                    "package_type": null
+                },
+                "order_number": "8384832",
+                "order_value": null,
+                "packages": [
+                    {
+                        "description": "Jeans",
+                        "height": 0.5,
+                        "items": [
+                            {
+                                "country_of_origin": "GB",
+                                "harmonisation_code": "5201",
+                                "name": "Jeans",
+                                "quantity": 1,
+                                "sku": "822 JEANS",
+                                "value": 25.55,
+                                "weight": 1.0
+                            }
+                        ],
+                        "length": 10.0,
+                        "tracking_number": null,
+                        "width": 12.2
+                    }
+                ],
+                "recipient": {
+                    "address": {
+                        "address1": "Innovation House",
+                        "address2": "The Bullring",
+                        "address3": "",
+                        "city": "Wexford",
+                        "country": "IE",
+                        "postcode": "Y35 DW6E",
+                        "state": "Wexford",
+                        "store_code": ""
+                    },
+                    "company_name": "Scurri",
+                    "contact_number": "072 8848292234",
+                    "email_address": "john@scurri.com",
+                    "first_name": "",
+                    "last_name": "John Doe",
+                    "name": "John Doe"
+                },
+                "rules_package_type": "<ShipmentDomain(44147)>",
+                "service": "Generic International Service",
+                "service_id": "Generic Carrier|Generic International Service GCINT",
+                "shipping_method": "",
+                "tracking_url": "",
+                "warehouse_id": "api-test-company|Test Warehouse"
+            }
+
+
+    + Schema
+
+            {
+                "properties": {
+                    "order_value": {
+                    "description": "This is the total value of the order. If this is not specified, then Scurri will calculate it from the values of the items in the order.",
+                    "type": "number",
+                    "required": false,
+                    "defaultValue": null
+                },
+                "options": {
+                  "description": "Additional carrier-specific options for the consignment.This is also the place where you set service enhancements",
+                  "required": false,
+                  "defaultValue": null,
+                  "properties": {
+                    "package_type": {
+                      "type": "string",
+                      "minimum": null,
+                      "maximum": null,
+                      "required": false,
+                      "defaultValue": null,
+                      "description": "Package type to use for this consignment."
+                    }
+                  }
+                },
+                "order_number": {
+                  "type": "string",
+                  "minimum": null,
+                  "maximum": null,
+                  "required": true,
+                  "defaultValue": null,
+                  "description": "Order number for the consignment"
+                },
+                "identifier": {
+                  "type": "string",
+                  "minimum": null,
+                  "maximum": null,
+                  "required": false,
+                  "defaultValue": null,
+                  "description": "A unique identifier, chosen by the client. If no identifier is given, a unique identifier is auto-generated. Note that if recreating the consignment by cancelling and creating again, the recreated identifier MUST be new and unique. Cancelled consignments retain their identifier so the identifier cannot be reused"
+                },
+                "service_id": {
+                  "type": "string",
+                  "minimum": null,
+                  "maximum": null,
+                  "required": false,
+                  "defaultValue": null,
+                  "description": "Carrier service ID that has been assigned to the consignment. Note that this takes precedence over any service assigned via shipping_method"
+                },
+                "delivery_instructions": {
+                  "type": "string",
+                  "minimum": null,
+                  "maximum": null,
+                  "required": false,
+                  "defaultValue": null,
+                  "description": "Any delivery or customer notes for the consignment"
+                },
+                "invoice": {
+                  "description": "Customs data for the consignment. Only required for international consignments",
+                  "required": true,
+                  "defaultValue": null,
+                  "properties": {
+                    "incoterm": {
+                      "type": "string",
+                      "minimum": null,
+                      "maximum": null,
+                      "required": true,
+                      "defaultValue": null,
+                      "description": "The terms of delivery for international consignments",
+                      "enum": [
+                        "",
+                        "DDP",
+                        "DAP"
+                      ]
+                    }
+                  }
+                },
+                "consignment_number": {
+                  "type": "string",
+                  "minimum": null,
+                  "maximum": null,
+                  "required": false,
+                  "defaultValue": null,
+                  "description": "The consignment number"
+                },
+                "currency": {
+                  "type": "string",
+                  "minimum": null,
+                  "maximum": null,
+                  "required": false,
+                  "defaultValue": null,
+                  "description": "ISO 4217 code for the currency used with the consignment. If not specified, defaults to British pounds (GBP)"
+                },
+                "carrier": {
+                  "type": "string",
+                  "minimum": null,
+                  "maximum": null,
+                  "required": false,
+                  "defaultValue": null,
+                  "description": "Carrier name"
+                },
+                "warehouse_id": {
+                  "type": "string",
+                  "minimum": null,
+                  "maximum": null,
+                  "required": false,
+                  "defaultValue": null,
+                  "description": "Warehouse ID where the consignment is being processed"
+                },
+                "current_status": {
+                  "description": "Current status of the consignment. Read-only",
+                  "required": false,
+                  "defaultValue": null,
+                  "properties": {
+                    "short_form": {
+                      "type": "string",
+                      "minimum": null,
+                      "maximum": 255,
+                      "required": true,
+                      "defaultValue": null,
+                      "description": "shortened name of status",
+                      "enum": [
+                        "Unallocated",
+                        "Allocated",
+                        "Printed",
+                        "Manifested",
+                        "Despatched",
+                        "Cancelled"
+                      ]
+                    },
+                    "rejection_reason": {
+                      "type": "string",
+                      "minimum": null,
+                      "maximum": null,
+                      "required": false,
+                      "defaultValue": null,
+                      "description": "additional information regarding unallocated status"
+                    },
+                    "status": {
+                      "type": "string",
+                      "minimum": null,
+                      "maximum": 255,
+                      "required": true,
+                      "defaultValue": null,
+                      "description": "message describing current status"
+                    }
+                  }
+                },
+                "tracking_url": {
+                  "type": "string",
+                  "minimum": null,
+                  "maximum": null,
+                  "required": false,
+                  "defaultValue": null,
+                  "description": "The tracking url"
+                },
+                "recipient": {
+                  "description": "Recipient address information",
+                  "required": true,
+                  "defaultValue": null,
+                  "properties": {
+                    "email_address": {
+                      "type": "string",
+                      "minimum": null,
+                      "maximum": null,
+                      "required": false,
+                      "defaultValue": null,
+                      "description": "E-mail address for the contact. Required depending on carrier"
+                    },
+                    "address": {
+                      "description": "Address information for the contact",
+                      "required": true,
+                      "defaultValue": null,
+                      "properties": {
+                        "country": {
+                          "type": "string",
+                          "minimum": null,
+                          "maximum": null,
+                          "required": true,
+                          "defaultValue": null,
+                          "description": "ISO 3166-1 alpha-2 country code for the address"
+                        },
+                        "postcode": {
+                          "type": "string",
+                          "minimum": null,
+                          "maximum": null,
+                          "required": false,
+                          "defaultValue": null,
+                          "description": "address postal code. Required for most countries"
+                        },
+                        "state": {
+                          "type": "string",
+                          "minimum": null,
+                          "maximum": null,
+                          "required": false,
+                          "defaultValue": null,
+                          "description": "state/county/prefecture code. Required for certain countries"
+                        },
+                        "address3": {
+                          "type": "string",
+                          "minimum": null,
+                          "maximum": null,
+                          "required": false,
+                          "defaultValue": null,
+                          "description": "Street address (line 3) for the location"
+                        },
+                        "address2": {
+                          "type": "string",
+                          "minimum": null,
+                          "maximum": null,
+                          "required": false,
+                          "defaultValue": null,
+                          "description": "Street address (line 2) for the location"
+                        },
+                        "address1": {
+                          "type": "string",
+                          "minimum": null,
+                          "maximum": null,
+                          "required": true,
+                          "defaultValue": null,
+                          "description": "Street address (line 1) for the location"
+                        },
+                        "store_code": {
+                          "type": "string",
+                          "minimum": null,
+                          "maximum": null,
+                          "required": false,
+                          "defaultValue": null,
+                          "description": "The identifier of the drop off location (Collect+ etc)"
+                        },
+                        "city": {
+                          "type": "string",
+                          "minimum": null,
+                          "maximum": 100,
+                          "required": true,
+                          "defaultValue": null,
+                          "description": "address name of the city"
+                        }
+                      }
+                    },
+                    "company_name": {
+                      "type": "string",
+                      "minimum": null,
+                      "maximum": null,
+                      "required": false,
+                      "defaultValue": null,
+                      "description": "Name of the contact's company"
+                    },
+                    "first_name": {
+                      "type": "string",
+                      "minimum": null,
+                      "maximum": null,
+                      "required": true,
+                      "defaultValue": null,
+                      "description": "First name part of the full name."
+                    },
+                    "name": {
+                      "type": "string",
+                      "minimum": null,
+                      "maximum": null,
+                      "required": true,
+                      "defaultValue": null,
+                      "description": "Full name of the contact"
+                    },
+                    "last_name": {
+                      "type": "string",
+                      "minimum": null,
+                      "maximum": null,
+                      "required": true,
+                      "defaultValue": null,
+                      "description": "Last name part of the full name."
+                    },
+                    "contact_number": {
+                      "type": "string",
+                      "minimum": null,
+                      "maximum": null,
+                      "required": false,
+                      "defaultValue": null,
+                      "description": "Landline/mobile number for contact. Required depending on carrier"
+                    }
+                  }
+                },
+                "rules_package_type": {
+                  "type": "string",
+                  "minimum": null,
+                  "maximum": null,
+                  "required": false,
+                  "defaultValue": null,
+                  "description": "Package type to use in rules"
+                },
+                "service": {
+                  "type": "string",
+                  "minimum": null,
+                  "maximum": null,
+                  "required": false,
+                  "defaultValue": null,
+                  "description": "Service name"
+                },
+                "shipping_method": {
+                  "type": "string",
+                  "minimum": null,
+                  "maximum": null,
+                  "required": false,
+                  "defaultValue": null,
+                  "description": "Optional shipping method for the consignment"
+                },
+                "create_date": {
+                  "description": "Optional ISO 8601 date/time the consignment was created. If not specified, defaults to current date/time. If timezone offset not specified, defaults to UTC offset",
+                  "type": "string",
+                  "required": false,
+                  "defaultValue": null
+                },
+                "packages": {
+                  "description": "Packages for the consignment",
+                  "type": "array",
+                  "required": true,
+                  "defaultValue": null,
+                  "items": {
+                    "properties": {
+                      "tracking_number": {
+                        "type": "string",
+                        "minimum": null,
+                        "maximum": null,
+                        "required": false,
+                        "defaultValue": null,
+                        "description": "unique identifier assigned by the carrier for tracking the package, if per-package tracking is supported. Read-only"
+                      },
+                      "width": {
+                        "description": "unit width of the package",
+                        "type": "number",
+                        "required": true,
+                        "defaultValue": null
+                      },
+                      "height": {
+                        "description": "unit height of the package",
+                        "type": "number",
+                        "required": true,
+                        "defaultValue": null
+                      },
+                      "length": {
+                        "description": "unit length of the package",
+                        "type": "number",
+                        "required": true,
+                        "defaultValue": null
+                      },
+                      "items": {
+                        "description": "Items contained in the package",
+                        "type": "array",
+                        "required": true,
+                        "defaultValue": null,
+                        "items": {
+                          "properties": {
+                            "quantity": {
+                              "description": "Number of items in the package",
+                              "type": "integer",
+                              "required": true,
+                              "default": 1
+                            },
+                            "value": {
+                              "description": "unit value of the item",
+                              "type": "number",
+                              "required": true,
+                              "defaultValue": null
+                            },
+                            "harmonisation_code": {
+                              "type": "string",
+                              "minimum": null,
+                              "maximum": 35,
+                              "required": false,
+                              "defaultValue": null,
+                              "description": "Standard harmonisation code of the item for tariff purposes. Only required if sending to an international destination."
+                            },
+                            "weight": {
+                              "description": "weight of the item",
+                              "type": "number",
+                              "required": true,
+                              "defaultValue": null
+                            },
+                            "name": {
+                              "type": "string",
+                              "minimum": null,
+                              "maximum": 255,
+                              "required": false,
+                              "defaultValue": null,
+                              "description": "display name of the item"
+                            },
+                            "country_of_origin": {
+                              "type": "string",
+                              "minimum": null,
+                              "maximum": null,
+                              "required": true,
+                              "defaultValue": null,
+                              "description": "ISO 3166-1 alpha-2 country code from where the item originates"
+                            },
+                            "sku": {
+                              "type": "string",
+                              "minimum": null,
+                              "maximum": 255,
+                              "required": false,
+                              "defaultValue": null,
+                              "description": "SKU for the item"
+                            }
+                          },
+                          "required": [
+                            "country_of_origin",
+                            "weight",
+                            "value",
+                            "quantity"
+                          ],
+                          "description": "Defines item data for a specific package. A package may have one or more\nitems. Weight is always defined in kilograms."
+                        }
+                      },
+                      "description": {
+                        "type": "string",
+                        "minimum": null,
+                        "maximum": null,
+                        "required": true,
+                        "defaultValue": null,
+                        "description": "general description of the contents of the package"
+                      }
+                    },
+                    "required": [
+                      "description",
+                      "items",
+                      "length",
+                      "height",
+                      "width"
+                    ],
+                    "description": "Defines package data for a specific consignment. Dimensions are all in\ncentimetres."
+                  }
+                }
+              },
+              "required": [
+                "packages",
+                "recipient",
+                "invoice",
+                "order_number"
+              ]
+            }
+
++ Response 404 (application/json)
+
+    This response indicates that the consignment has not been found.
+
+    + Body
+
+#### Update the specified consignment [PUT]
+
+You can use this API call to update the details of the specified consignment.
+
+The API does not support partial updates, so you have to specify all values, when using this API call.
+
++ Request (application/json)
+    + Headers
+
+            Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
+
+    + Body
+
+            {
+              "carrier": "Generic Carrier",
+              "service_id": "Generic Carrier|Generic International Service GCINT",
+              "identifier": "8a12630db404424b943e131ce4ee3976",
+              "packages": [
+                {
+                  "items": [
+                    {
+                      "weight": 1.0,
+                      "value": 25.55,
+                      "fabric_content": "silk",
+                      "harmonisation_code": "5201",
+                      "country_of_origin": "GB",
+                      "sku": "822 JEANS",
+                      "quantity": 2,
+                      "name": "Jeans"
+                    }
+                  ],
+                  "length": 10.0,
+                  "height": 0.5,
+                  "width": 12.2
+                }
+              ],
+              "recipient": {
+                "address": {
+                  "country": "IE",
+                  "postcode": "Y35 DW6E",
+                  "city": "Wexford",
+                  "address2": "The Bullring",
+                  "address1": "Innovation House",
+                  "state": "Wexford"
+                },
+                "contact_number": "072 8848292234",
+                "email_address": "john@scurri.com",
+                "company_name": "Scurri",
+                "name": "John Doe"
+              },
+              "order_number": "8384832"
+            }
+
++ Response 200 (application/json)
+
+    The response includes all information for the updated consignment; that is, the result is the same as that of a `GET` request.
+
+    + Body
+
+            {
+                "carrier": "Generic Carrier",
+                "consignment_number": null,
+                "create_date": "2016-03-28T12:57:05+0000",
+                "currency": "GBP",
+                "current_status": {
+                    "rejection_reason": null,
+                    "short_form": "Allocated",
+                    "status": "Carrier and service allocated"
+                },
+                "delivery_instructions": "",
+                "identifier": "8a12630db404424b943e131ce4ee3976",
+                "invoice": {
+                    "incoterm": ""
+                },
+                "options": {
+                    "package_type": null
+                },
+                "order_number": "8384832",
+                "order_value": null,
+                "packages": [
+                    {
+                        "description": "Jeans",
+                        "height": 0.5,
+                        "items": [
+                            {
+                                "country_of_origin": "GB",
+                                "harmonisation_code": "5201",
+                                "name": "Jeans",
+                                "quantity": 2,
+                                "sku": "822 JEANS",
+                                "value": 25.55,
+                                "weight": 1.0
+                            }
+                        ],
+                        "length": 10.0,
+                        "tracking_number": null,
+                        "width": 12.2
+                    }
+                ],
+                "recipient": {
+                    "address": {
+                        "address1": "Innovation House",
+                        "address2": "The Bullring",
+                        "address3": "",
+                        "city": "Wexford",
+                        "country": "IE",
+                        "postcode": "Y35 DW6E",
+                        "state": "Wexford",
+                        "store_code": ""
+                    },
+                    "company_name": "Scurri",
+                    "contact_number": "072 8848292234",
+                    "email_address": "john@scurri.com",
+                    "first_name": " ",
+                    "last_name": "John Doe",
+                    "name": "John Doe"
+                },
+                "rules_package_type": "Shipment 44148 : None",
+                "service": "Generic International Service",
+                "service_id": "Generic Carrier|Generic International Service GCINT",
+                "shipping_method": "service_type",
+                "tracking_url": "",
+                "warehouse_id": "api-test-company|Test Warehouse"
+            }
+
+
++ Response 400 (application/json)
+
+    This response indicates that something was wrong with the supplied data.
+
+    + Body
+
+### Cancel a single consignment [DELETE]
+
+You can use this API call to cancel a consignment. Scurri will notify, when necessary, the carrier to void the generated labels.
+
++ Request (application/json)
+    + Headers
+
+            Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
+
++ Response 204 (application/json)
+
+    This response indicates that the consignment was cancelled successfully.
+
+    + Body
+
++ Response 400
+
+    This response indications that there was an error cancelling the specified consignment.
+
+    + Body
+
+
+
+## Consignment Documents [/company/{company_slug}/consignment/{consignment_id}/documents/{?documenttype,label_quantity,invoice_quantity}]
+
+### Get the label and the invoice for the consignment [GET]
+
+You can use this API call to get the label and any customs invoice documents required for a specific consignment, if required.
+
+Keep in mind that a label will be created for each package of the consignment.
+
+The resulting documents are base64-encoded and they can be either in PDF format or in PNG. In the former case, there is one PDF returned with multiple labels concatenated in a single document (one label per page). In the latter case, we cannot concatenate PNG files together, so a ZIP file is returned instead that contains all files.
+
+About the customs invoice documents, Scurri will return the documents the carrier requires, only if the carrier does require them for the specific consignment.
+
+Another thing to note about customs invoice documents is that they can be either in a 6"x4" size (for thermal printer) or in an A4 size (for a document printer). Your account can be configured, so that 6"x4" thermal invoices can be concatenated with the respective label. This makes it easier to send each file to the correct printer.
+
++ Parameters
+    + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
+    + consignment_id (string) - The identifier of the consignment.
+    + documenttype (enum[string],optional) - The file format of the result. The available values are `application/pdf` and `image/png`.
+        + Default: `application/pdf`
+        + Members
+            + `application/pdf`
+            + `image/png`
+    + label_quantity (int,optional) - The number of copies of the label you want.
+        + Default: 1
+    + invoice_quantity (int,optional) - The number of copies for the customs invoice document you want.
+        + Default: 3
+
++ Request
+    + Headers
+
+            Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "invoices": null,
+                "labels": "..."
+            }
+
+    + Schema
+
+            {
+              "properties": {
+                "labels": {
+                  "description": "Base64-encoded string containing raw label bytes.",
+                  "type": "string",
+                  "required": true
+                },
+                "invoices": {
+                  "description": "Base64-encoded string containing raw invoice bytes.",
+                  "type": "string",
+                  "required": false
+                }
+              },
+              "description": "contains consignment documents data"
+            }
+
++ Response 400 (application/json)
+
+    This response indicates that there has been a problem with generating the documents. You should check the status of the consignment instead.
+
+    + Body
+
+
+
+# Group Manifests
+
+The manifest process marks a list of consignments as ready to be picked up by the carrier.
+
+A manifest always refers to a specific warehouse and carrier. Scurri abstracts away the necessary actions and documentation a carrier needs and presents a common interface for the manifest process.
+
+## Creating Manifests [/company/{company_slug}/manifest/]
+
+### Create a manifest [POST]
+
+You can use this API call to mark a list of consignments for a **specific carrier** and **specific warehouse** as manifested.
+
+This API call will mark the specified consignments as manifested within Scurri and perform any post-manifest actions, such as generate the necessary documentation for a manifest and send any pre-alert data to the carrier.
+
++ Parameters
+    + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
++ Request (application/json)
+    + Headers
+
+            Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
+
+    + Body
+
+            {
+                "consignment_ids": [
+                    "8a12630db404424b943e131ce4ee3976"
+                ],
+                "carrier_id": "Generic Carrier",
+                "warehouse_id": "api-test-company|Test Warehouse"
+            }
+
+    + Schema
+
+            {
+              "properties": {
+                "consignment_ids": {
+                  "description": "Consignment IDs for the manifest. All consignments must be ready for manifesting.",
+                  "type": "array",
+                  "required": true,
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "carrier_id": {
+                  "description": "Carrier ID for the manifest",
+                  "type": "string",
+                  "required": true
+                },
+                "warehouse_id": {
+                  "description": "Warehouse ID where the consignment is being manifested. Defaults to the company's default warehouse if not specified",
+                  "type": "string",
+                  "required": false
+                }
+              },
+              "description": "Data to send for creating a manifest."
+            }
+
+
++ Response 201 (application/json)
+
+    The shipments have been marked as manifested and the background jobs have been kicked off.
+
+    + Body
+
+            {
+                "identifier": "2432"
+            }
+
++ Response 400 (application/json)
+
+    The request has some errors.
+
+    + Body
+
+## Manifest Documentation [/company/{company_slug}/manifest/{manifest_id}/documents/]
+
+You can use this API call to get the manifest documentation (as an A4-size PDF file) that you need to hand-in to the carrier.
+
+Scurri will return the correct documentation for the specified carrier.
+
+Keep in mind that, because the document generation is kicked off asynchronously by the previous API call, the documents may not be ready, when you execute this API call. In that case, you should retry after a while.
+
+### Get the manifest documentation [GET]
+
++ Parameters
+     + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
+     + manifest_id (int) - The identifier of the manifest, as returned by the previous API call.
++ Request (application/json)
+    + Headers
+
+            Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
+
++ Response 200 (application/json)
+
+    The response contains the PDF documents as a base64-encoded string.
+
+    + Body
+
+            {
+                "documents": "..."
+            }
+
++ Response 204 (application/json)
+
+    This response indicates that the documents are not ready yet.
+
+    + Body
+
++ Response 400 (application/json)
+
+    This response indicates that there was something wrong with the request.
+
+    + Body
+
++ Response 409 (application/json)
+
+    This response indicates that the manifesting process has failed.
+
+    + Body
