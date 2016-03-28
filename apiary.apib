@@ -126,9 +126,12 @@ once to get the values.
 
 # Carrier Services [/company/{company_slug}/carrierservices/]
 
-The CarrierServices API allows you to retrieve a list of services that have been enabled in your account.
+The CarrierServices API allows you to retrieve a list of services that
+have been enabled in your account.
 
-The result contains the identifier for each service, which you can use in the rest of the API calls, whenever a **Service** needs to be specified.
+The result contains the identifier for each service, which you can use
+in the rest of the API calls, whenever a **Service** needs to be
+specified.
 
 ## List all the carrier services for the logged in user [GET]
 
@@ -156,9 +159,12 @@ The result contains the identifier for each service, which you can use in the re
 
 # Warehouses [/company/{company_slug}/warehouses/]
 
-The Warehouses API allows you to retrieve a list of warehouses that you have access to (within a company).
+The Warehouses API allows you to retrieve a list of warehouses that
+you have access to (within a company).
 
-The result contains the identifier for each warehouse, which you can use in the rest of the API calls, whenever a **Warehouse** needs to be specified.
+The result contains the identifier for each warehouse, which you can
+use in the rest of the API calls, whenever a **Warehouse** needs to be
+specified.
 
 ## List all the warehouses the user has access to [GET]
 
@@ -182,18 +188,24 @@ The result contains the identifier for each warehouse, which you can use in the 
 
 ## Consignments Collection [/company/{company_slug}/consignments/]
 
-This group of API calls allow you to interact with your consignments in Scurri. You can list and search through them, create new ones, get their status and print the necessary documentation (labels and custom invoices, when needed).
+This group of API calls allow you to interact with your consignments
+in Scurri. You can list and search through them, create new ones, get
+their status and print the necessary documentation (labels and custom
+invoices, when needed).
 
 + Parameters
     + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
 
 ### Get the list of created consignments [GET /company/{company_slug}/consignments/{?offset,limit,identifier,status}]
 
-You can get use this API call to retrieve the list of consignments in Scurri.
+You can get use this API call to retrieve the list of consignments in
+Scurri.
 
 Pagination is provided via the `offset` and `limit` GET parameters.
 
-You can also use this API call to search for consignments using specific criteria, either for a specific `identifier` or for consignments of a specific `status`.
+You can also use this API call to search for consignments using
+specific criteria, either for a specific `identifier` or for
+consignments of a specific `status`.
 
 + Parameters
     + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
@@ -293,19 +305,33 @@ You can also use this API call to search for consignments using specific criteri
 
 ### Create a New Consignment [POST]
 
-You can use this API call to create one or more new consignments. In both cases, you have to specify a list in the body.
+You can use this API call to create one or more new consignments. In
+both cases, you have to specify a list in the body.
 
-Scurri will do its best to store the data in the database and return a successful message, instead of validating the data against a carrier.
-That is, the validation process with a carrier is a step performed after a consignment has been created successfully.
-The reason is that this way Scurri can decouple importing a consignment from allocating it to a specific carrier, each of which has different requirements.
+Scurri will do its best to store the data in the database and return a
+successful message, instead of validating the data against a carrier.
+That is, the validation process with a carrier is a step performed
+after a consignment has been created successfully.  The reason is that
+this way Scurri can decouple importing a consignment from allocating
+it to a specific carrier, each of which has different requirements.
 
-What this means in practice is that a success respons for this API call does not mean that the consignment has been allocated to a carrier and service successfully.
+What this means in practice is that a success respons for this API
+call does not mean that the consignment has been allocated to a
+carrier and service successfully.
 
-Additionally, most users will want their configured rules to set allocate a consignment to a carrier and service. These users should leave the carrier-related fields empty. If any of those are specified in the request, then they will take precedence over the rules.
+Additionally, most users will want their configured rules to set
+allocate a consignment to a carrier and service. These users should
+leave the carrier-related fields empty. If any of those are specified
+in the request, then they will take precedence over the rules.
 
-Another thing to keep in mind is that, in the case of batch creating consignments, Scurri will run any allocation processes asynchronously. As a result, a label will not be available straight away.
+Another thing to keep in mind is that, in the case of batch creating
+consignments, Scurri will run any allocation processes
+asynchronously. As a result, a label will not be available straight
+away.
 
-You can take a look at the [GET consignment](#reference/consignments/consignments/get-a-single-consignment) for the payload of this request.
+You can take a look at the
+[GET consignment](#reference/consignments/consignments/get-a-single-consignment)
+for the payload of this request.
 
 + Request (application/json)
     + Headers
@@ -358,7 +384,8 @@ You can take a look at the [GET consignment](#reference/consignments/consignment
 
 + Response 201 (application/json)
 
-    The response has 2 entries: one is a dictionary for errors and one a list of successful imports.
+    The response has 2 entries: one is a dictionary for errors and one
+    a list of successful imports.
 
     + Body
 
@@ -378,9 +405,11 @@ You can take a look at the [GET consignment](#reference/consignments/consignment
 
 #### Get a single consignment [GET]
 
-You can use this API call to get all details for the specified consignment.
+You can use this API call to get all details for the specified
+consignment.
 
-For instance, this is how you can query the status of a consignment and get any error messages from the allocation phase.
+For instance, this is how you can query the status of a consignment
+and get any error messages from the allocation phase.
 
 + Request (application/json)
     + Headers
@@ -908,9 +937,11 @@ For instance, this is how you can query the status of a consignment and get any 
 
 #### Update the specified consignment [PUT]
 
-You can use this API call to update the details of the specified consignment.
+You can use this API call to update the details of the specified
+consignment.
 
-The API does not support partial updates, so you have to specify all values, when using this API call.
+The API does not support partial updates, so you have to specify all
+values, when using this API call.
 
 + Request (application/json)
     + Headers
@@ -961,7 +992,8 @@ The API does not support partial updates, so you have to specify all values, whe
 
 + Response 200 (application/json)
 
-    The response includes all information for the updated consignment; that is, the result is the same as that of a `GET` request.
+    The response includes all information for the updated consignment;
+    that is, the result is the same as that of a `GET` request.
 
     + Body
 
@@ -1034,13 +1066,15 @@ The API does not support partial updates, so you have to specify all values, whe
 
 + Response 400 (application/json)
 
-    This response indicates that something was wrong with the supplied data.
+    This response indicates that something was wrong with the supplied
+    data.
 
     + Body
 
 ### Cancel a single consignment [DELETE]
 
-You can use this API call to cancel a consignment. Scurri will notify, when necessary, the carrier to void the generated labels.
+You can use this API call to cancel a consignment. Scurri will notify,
+when necessary, the carrier to void the generated labels.
 
 + Request (application/json)
     + Headers
@@ -1049,13 +1083,15 @@ You can use this API call to cancel a consignment. Scurri will notify, when nece
 
 + Response 204 (application/json)
 
-    This response indicates that the consignment was cancelled successfully.
+    This response indicates that the consignment was cancelled
+    successfully.
 
     + Body
 
 + Response 400
 
-    This response indications that there was an error cancelling the specified consignment.
+    This response indications that there was an error cancelling the
+    specified consignment.
 
     + Body
 
@@ -1065,15 +1101,27 @@ You can use this API call to cancel a consignment. Scurri will notify, when nece
 
 ### Get the label and the invoice for the consignment [GET]
 
-You can use this API call to get the label and any customs invoice documents required for a specific consignment, if required.
+You can use this API call to get the label and any customs invoice
+documents required for a specific consignment, if required.
 
-Keep in mind that a label will be created for each package of the consignment.
+Keep in mind that a label will be created for each package of the
+consignment.
 
-The resulting documents are base64-encoded and they can be either in PDF format or in PNG. In the former case, there is one PDF returned with multiple labels concatenated in a single document (one label per page). In the latter case, we cannot concatenate PNG files together, so a ZIP file is returned instead that contains all files.
+The resulting documents are base64-encoded and they can be either in
+PDF format or in PNG. In the former case, there is one PDF returned
+with multiple labels concatenated in a single document (one label per
+page). In the latter case, we cannot concatenate PNG files together,
+so a ZIP file is returned instead that contains all files.
 
-About the customs invoice documents, Scurri will return the documents the carrier requires, only if the carrier does require them for the specific consignment.
+About the customs invoice documents, Scurri will return the documents
+the carrier requires, only if the carrier does require them for the
+specific consignment.
 
-Another thing to note about customs invoice documents is that they can be either in a 6"x4" size (for thermal printer) or in an A4 size (for a document printer). Your account can be configured, so that 6"x4" thermal invoices can be concatenated with the respective label. This makes it easier to send each file to the correct printer.
+Another thing to note about customs invoice documents is that they can
+be either in a 6"x4" size (for thermal printer) or in an A4 size (for
+a document printer). Your account can be configured, so that 6"x4"
+thermal invoices can be concatenated with the respective label. This
+makes it easier to send each file to the correct printer.
 
 + Parameters
     + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
@@ -1122,7 +1170,9 @@ Another thing to note about customs invoice documents is that they can be either
 
 + Response 400 (application/json)
 
-    This response indicates that there has been a problem with generating the documents. You should check the status of the consignment instead.
+    This response indicates that there has been a problem with
+    generating the documents. You should check the status of the
+    consignment instead.
 
     + Body
 
@@ -1130,17 +1180,24 @@ Another thing to note about customs invoice documents is that they can be either
 
 # Group Manifests
 
-The manifest process marks a list of consignments as ready to be picked up by the carrier.
+The manifest process marks a list of consignments as ready to be
+picked up by the carrier.
 
-A manifest always refers to a specific warehouse and carrier. Scurri abstracts away the necessary actions and documentation a carrier needs and presents a common interface for the manifest process.
+A manifest always refers to a specific warehouse and carrier. Scurri
+abstracts away the necessary actions and documentation a carrier needs
+and presents a common interface for the manifest process.
 
 ## Creating Manifests [/company/{company_slug}/manifest/]
 
 ### Create a manifest [POST]
 
-You can use this API call to mark a list of consignments for a **specific carrier** and **specific warehouse** as manifested.
+You can use this API call to mark a list of consignments for a
+**specific carrier** and **specific warehouse** as manifested.
 
-This API call will mark the specified consignments as manifested within Scurri and perform any post-manifest actions, such as generate the necessary documentation for a manifest and send any pre-alert data to the carrier.
+This API call will mark the specified consignments as manifested
+within Scurri and perform any post-manifest actions, such as generate
+the necessary documentation for a manifest and send any pre-alert data
+to the carrier.
 
 + Parameters
     + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
@@ -1188,7 +1245,8 @@ This API call will mark the specified consignments as manifested within Scurri a
 
 + Response 201 (application/json)
 
-    The shipments have been marked as manifested and the background jobs have been kicked off.
+    The shipments have been marked as manifested and the background
+    jobs have been kicked off.
 
     + Body
 
@@ -1204,11 +1262,16 @@ This API call will mark the specified consignments as manifested within Scurri a
 
 ## Manifest Documentation [/company/{company_slug}/manifest/{manifest_id}/documents/]
 
-You can use this API call to get the manifest documentation (as an A4-size PDF file) that you need to hand-in to the carrier.
+You can use this API call to get the manifest documentation (as an
+A4-size PDF file) that you need to hand-in to the carrier.
 
-Scurri will return the correct documentation for the specified carrier.
+Scurri will return the correct documentation for the specified
+carrier.
 
-Keep in mind that, because the document generation is kicked off asynchronously by the previous API call, the documents may not be ready, when you execute this API call. In that case, you should retry after a while.
+Keep in mind that, because the document generation is kicked off
+asynchronously by the previous API call, the documents may not be
+ready, when you execute this API call. In that case, you should retry
+after a while.
 
 ### Get the manifest documentation [GET]
 
@@ -1222,7 +1285,8 @@ Keep in mind that, because the document generation is kicked off asynchronously 
 
 + Response 200 (application/json)
 
-    The response contains the PDF documents as a base64-encoded string.
+    The response contains the PDF documents as a base64-encoded
+    string.
 
     + Body
 
