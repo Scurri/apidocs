@@ -39,7 +39,7 @@ As a result, the `Content-Type` header must be set to `application/json`.
 The most important features of the Scurri API are:
 
 - Importing consignments
-- Getting the necessary documents (label)
+- Getting the necessary documents (labels and/or commercial invoices)
 - Manifesting consignments
 
 The Scurri API works only on top of HTTPS, so that the connection is
@@ -65,8 +65,7 @@ consignment, then the order number is a good candidate for this.
 
 #### Importing consignments
 
-The first step is actually importing consignments into Scurri. You can
-import them one by one or batch import them. Scurri has optimized the
+The first step is to import your consignments into Scurri. They can be imported individually (one by one) or as part of a batch. Scurri has optimized the
 import process to support importing thousands of consignments in one
 API call.
 
@@ -74,26 +73,23 @@ API call.
 
 After a consignment has been imported, Scurri will automatically
 allocate it to a carrier and a service based on the shipment rules you
-have defined or the values you have specified in the API.
+have defined in our user interface, alternatively you can specificy these values in the API (and in doing so overwrite any shipment rules that may already be set up).
 
-Then, Scurri will try to validate that the consignment meets the
-criteria for using the allocated carrier and service, e.g. the weight
-and dimension limits.
+At this point Scurri will try to validate that the consignment meets the
+criteria for using the specified carrier and service, e.g. typically these would be the weight limits,
+dimension limits and destination restrictions.
 
-If the consignment does not fail the validation step, you can download
-its label and documentation for customs, either as PDF documents or
-PNG. The latter is useful for embedding the label in another document.
+If the consignment does not fail the validation step you can download
+its label(s) and any customs documentation required, either as PDF documents or
+PNG. The latter is useful for embedding the label(s) in another document.
 
-If the consignment had failed the validation step, though, you would
+If, on the other hand, this validation had failed (that it exceeds the weight, dimension or destinational limits and restrictions) then you would
 get an error back with the reason the validation failed.
 
 #### Manifesting consignments
 
-The last step is marking consignments as manifested. When you do this,
-Scurri will generate the manifest documentation that you have to
-hand-in to the carrier and at the same time notify the carrier. A
-consignment that has been marked as manifested can no longer be
-edited.
+The last step is marking the consignments as manifested. When you do this,
+Scurri will generate the manifest documentation that you may have to provide to the carrier and at the same time notify the carrier. Note - Once you've manifested a conisgnment it will no longer be available for editing.
 
 # Carriers [/company/{company_slug}/carriers/]
 
