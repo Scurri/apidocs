@@ -19,12 +19,18 @@ codes for unexpected internal server errors.
 All requests must be authenticated using [Basic
 Auth](https://en.wikipedia.org/wiki/Basic_access_authentication#Client_side).
 
-With Basic Auth, you have to send the username and password
-**base64-encoded** in the standard Basic manner, e.g. `Authorization:
-Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==`.
+With Basic Auth, you have to send the username and password **base64-encoded** in the standard Basic manner, e.g.
+`Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==`.
 
-Failed requests will return 401 HTTP code with `WWW-Authenticate:
-Basic` response header.
+Here is some sample code in Python to generate the value of the header:
+
+    >>> import base64
+    >>> username = 'apitest'
+    >>> password = 'api-test-password'
+    >>> print base64.b64encode(username + ':' + password)
+    YXBpdGVzdDphcGktdGVzdC1wYXNzd29yZA==
+
+Failed requests will return a 401 HTTP code with `WWW-Authenticate: Basic` response header.
 
 ## Request format
 
