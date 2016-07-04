@@ -808,6 +808,12 @@ and get any error messages from the allocation phase.
                   "required": false,
                   "defaultValue": null
                 },
+                "shipping_date": {
+                  "description": "Optional ISO 8601 date/time the shipping will take place. If not specified, defaults to date of printing. If timezone offset not specified, defaults to UTC offset",
+                  "type": "string",
+                  "required": false,
+                  "defaultValue": null
+                },
                 "packages": {
                   "description": "Packages for the consignment",
                   "type": "array",
