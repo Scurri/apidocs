@@ -331,6 +331,10 @@ allocate a consignment to a carrier and service. These users should
 leave the carrier-related fields empty. If any of those are specified
 in the request, then they will take precedence over the rules.
 
+If you don't want to run the Consignment against your ruleset, therefore only
+populating the Consignment from the request, pass a non-existent rule name
+in the `shipping_method` key on the Consignment.
+
 Another thing to keep in mind is that, in the case of batch creating
 consignments, Scurri will run any allocation processes
 asynchronously. As a result, a label will not be available straight
