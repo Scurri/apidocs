@@ -210,14 +210,20 @@ Scurri.
 
 Pagination is provided via the `offset` and `limit` GET parameters.
 
+For the `offset`, we don't use an integer value but instead use the last
+`identifier` of the current batch. The `next` value returned with the
+response body contains a URL you can use to retrieve the next batch.
+
+Example offset URL: `https://api.scurri.co.uk/v1/company/test-company/consignments/?offset=000ed1bfb93c43319ec79247f50dfd3c`
+
 You can also use this API call to search for consignments using
 specific criteria, either for a specific `identifier` or for
 consignments of a specific `status`.
 
 + Parameters
     + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
-    + offset (int,optional) - The offset for any pagination.
-        + Default: 0
+    + offset (string,optional) - The offset for any pagination. This is the string identifier of the last consignment entry in the current batch.
+        + Default: ''
     + limit (int,optional) - How many results to return for a request.
         + Default: 10
     + identifier: `myidentifier` (string,optional) - Search for the consignment with the given identifier.
@@ -309,6 +315,745 @@ consignments of a specific `status`.
                 ]
             }
 
+### Example Offset with Multiple Pages [GET /company/{company_slug}/consignments/{?offset,limit,status}]
+
+This is an example `offset` with the response.
+
+The test URL was `https://api.scurri.co.uk/v1/company/scurri-live-test/consignments/?offset=TEST2893&status=Printed`.
+
+As you can see, in the `next` field, it returns the link to next batch.
+The next returns `null` if it's the last batch.
+Also the count decreases as you traverse using the `next` links.
+
++ Parameters
+    + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
+    + offset: TEST2893 (string,optional) - The offset for any pagination. This is the string identifier of the last consignment entry in the current batch.
+        + Default: ''
+    + limit: (int,optional) - How many results to return for a request.
+        + Default: 10
+    + identifier: (string,optional) - Search for the consignment with the given identifier.
+    + status: Printed (enum[string],optional) - Search for consignments with a specific status.
+        + Members
+             + `Unallocated`
+             + `Allocated`
+             + `Printed`
+             + `Manifested`
+             + `Despatched`
+             + `Cancelled`
+
++ Request
+    + Headers
+
+                Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
+
++ Response 200 (application/json)
+
+{
+  "count": 23,
+  "next": "https://api.scurri.co.uk/v1/company/scurri-live-test/consignments/?offset=TEST5838&status=Printed",
+  "results": [
+    {
+      "identifier": "TEST3019",
+      "order_number": "TEST3019",
+      "create_date": "2017-05-24T12:03:12+0000",
+      "service_id": "Generic Carrier|Generic International Service GCINT",
+      "warehouse_id": "scurri-live-test|TechHub @Campus",
+      "current_status": {
+        "short_form": "Printed",
+        "status": "Labels printed, shipment ready to manifest.",
+        "rejection_reason": null
+      },
+      "recipient": {
+        "name": "John Smith",
+        "first_name": "",
+        "last_name": "John Smith",
+        "company_name": "Scurri",
+        "email_address": "example-email@scurri.com",
+        "contact_number": "0123456789",
+        "address": {
+          "address1": "Innovation House",
+          "address2": "The Bullring",
+          "address3": "",
+          "city": "Wexford",
+          "state": "Wexford",
+          "postcode": "Y35 DW6E",
+          "country": "IE",
+          "store_code": ""
+        },
+        "tax_identifier": ""
+      },
+      "packages": [
+        {
+          "description": "Sample Product",
+          "tracking_number": "9389491",
+          "width": 3,
+          "height": 1,
+          "length": 1,
+          "items": [
+            {
+              "name": "Sample Product",
+              "quantity": 2,
+              "sku": "PRO123",
+              "country_of_origin": "GB",
+              "harmonisation_code": "71131900",
+              "weight": 2,
+              "value": 5
+            }
+          ]
+        }
+      ],
+      "invoice": {
+        "incoterm": ""
+      },
+      "delivery_instructions": "Leave in the garden shed",
+      "currency": "EUR",
+      "options": {
+        "package_type": null
+      },
+      "shipping_method": "",
+      "consignment_number": "000000000008108293",
+      "order_value": null,
+      "tracking_url": "",
+      "service": "Generic International Service",
+      "carrier": "Generic Carrier",
+      "rules_package_type": "",
+      "shipping_date": null,
+      "custom_field_1": "CUSTOM1",
+      "custom_field_2": "CUSTOM2",
+      "export_customs": {}
+    },
+    {
+      "identifier": "TEST3027",
+      "order_number": "TEST3027",
+      "create_date": "2017-05-24T12:03:45+0000",
+      "service_id": "Generic Carrier|Generic International Service GCINT",
+      "warehouse_id": "scurri-live-test|TechHub @Campus",
+      "current_status": {
+        "short_form": "Printed",
+        "status": "Labels printed, shipment ready to manifest.",
+        "rejection_reason": null
+      },
+      "recipient": {
+        "name": "John Smith",
+        "first_name": "",
+        "last_name": "John Smith",
+        "company_name": "Scurri",
+        "email_address": "example-email@scurri.com",
+        "contact_number": "0123456789",
+        "address": {
+          "address1": "Innovation House",
+          "address2": "The Bullring",
+          "address3": "",
+          "city": "Wexford",
+          "state": "Wexford",
+          "postcode": "Y35 DW6E",
+          "country": "IE",
+          "store_code": ""
+        },
+        "tax_identifier": ""
+      },
+      "packages": [
+        {
+          "description": "Sample Product",
+          "tracking_number": "9389542",
+          "width": 1,
+          "height": 2,
+          "length": 3,
+          "items": [
+            {
+              "name": "Sample Product",
+              "quantity": 2,
+              "sku": "PRO123",
+              "country_of_origin": "GB",
+              "harmonisation_code": "71131900",
+              "weight": 0,
+              "value": 5
+            }
+          ]
+        }
+      ],
+      "invoice": {
+        "incoterm": ""
+      },
+      "delivery_instructions": "Leave in the garden shed",
+      "currency": "EUR",
+      "options": {
+        "package_type": null
+      },
+      "shipping_method": "",
+      "consignment_number": "000000000008108343",
+      "order_value": null,
+      "tracking_url": "",
+      "service": "Generic International Service",
+      "carrier": "Generic Carrier",
+      "rules_package_type": "",
+      "shipping_date": null,
+      "custom_field_1": "CUSTOM1",
+      "custom_field_2": "CUSTOM2",
+      "export_customs": {}
+    },
+    {
+      "identifier": "TEST334",
+      "order_number": "TEST334",
+      "create_date": "2017-05-24T12:03:43+0000",
+      "service_id": "Generic Carrier|Generic International Service GCINT",
+      "warehouse_id": "scurri-live-test|TechHub @Campus",
+      "current_status": {
+        "short_form": "Printed",
+        "status": "Labels printed, shipment ready to manifest.",
+        "rejection_reason": null
+      },
+      "recipient": {
+        "name": "John Smith",
+        "first_name": "",
+        "last_name": "John Smith",
+        "company_name": "Scurri",
+        "email_address": "example-email@scurri.com",
+        "contact_number": "0123456789",
+        "address": {
+          "address1": "Innovation House",
+          "address2": "The Bullring",
+          "address3": "",
+          "city": "Wexford",
+          "state": "Wexford",
+          "postcode": "Y35 DW6E",
+          "country": "IE",
+          "store_code": ""
+        },
+        "tax_identifier": ""
+      },
+      "packages": [
+        {
+          "description": "Sample Product",
+          "tracking_number": "9389538",
+          "width": 2,
+          "height": 1,
+          "length": 1,
+          "items": [
+            {
+              "name": "Sample Product",
+              "quantity": 0,
+              "sku": "PRO123",
+              "country_of_origin": "GB",
+              "harmonisation_code": "71131900",
+              "weight": 1,
+              "value": 79
+            }
+          ]
+        }
+      ],
+      "invoice": {
+        "incoterm": ""
+      },
+      "delivery_instructions": "Leave in the garden shed",
+      "currency": "EUR",
+      "options": {
+        "package_type": null
+      },
+      "shipping_method": "",
+      "consignment_number": "000000000008108339",
+      "order_value": null,
+      "tracking_url": "",
+      "service": "Generic International Service",
+      "carrier": "Generic Carrier",
+      "rules_package_type": "",
+      "shipping_date": null,
+      "custom_field_1": "CUSTOM1",
+      "custom_field_2": "CUSTOM2",
+      "export_customs": {}
+    },
+    {
+      "identifier": "TEST3618",
+      "order_number": "TEST3618",
+      "create_date": "2017-05-24T12:03:44+0000",
+      "service_id": "Generic Carrier|Generic International Service GCINT",
+      "warehouse_id": "scurri-live-test|TechHub @Campus",
+      "current_status": {
+        "short_form": "Printed",
+        "status": "Labels printed, shipment ready to manifest.",
+        "rejection_reason": null
+      },
+      "recipient": {
+        "name": "John Smith",
+        "first_name": "",
+        "last_name": "John Smith",
+        "company_name": "Scurri",
+        "email_address": "example-email@scurri.com",
+        "contact_number": "0123456789",
+        "address": {
+          "address1": "Innovation House",
+          "address2": "The Bullring",
+          "address3": "",
+          "city": "Wexford",
+          "state": "Wexford",
+          "postcode": "Y35 DW6E",
+          "country": "IE",
+          "store_code": ""
+        },
+        "tax_identifier": ""
+      },
+      "packages": [
+        {
+          "description": "Sample Product",
+          "tracking_number": "9389539",
+          "width": 3,
+          "height": 2,
+          "length": 1,
+          "items": [
+            {
+              "name": "Sample Product",
+              "quantity": 1,
+              "sku": "PRO123",
+              "country_of_origin": "GB",
+              "harmonisation_code": "71131900",
+              "weight": 2,
+              "value": 55
+            }
+          ]
+        }
+      ],
+      "invoice": {
+        "incoterm": ""
+      },
+      "delivery_instructions": "Leave in the garden shed",
+      "currency": "EUR",
+      "options": {
+        "package_type": null
+      },
+      "shipping_method": "",
+      "consignment_number": "000000000008108340",
+      "order_value": null,
+      "tracking_url": "",
+      "service": "Generic International Service",
+      "carrier": "Generic Carrier",
+      "rules_package_type": "",
+      "shipping_date": null,
+      "custom_field_1": "CUSTOM1",
+      "custom_field_2": "CUSTOM2",
+      "export_customs": {}
+    },
+    {
+      "identifier": "TEST3939",
+      "order_number": "TEST3939",
+      "create_date": "2017-05-24T12:03:48+0000",
+      "service_id": "Generic Carrier|Generic International Service GCINT",
+      "warehouse_id": "scurri-live-test|TechHub @Campus",
+      "current_status": {
+        "short_form": "Printed",
+        "status": "Labels printed, shipment ready to manifest.",
+        "rejection_reason": null
+      },
+      "recipient": {
+        "name": "John Smith",
+        "first_name": "",
+        "last_name": "John Smith",
+        "company_name": "Scurri",
+        "email_address": "example-email@scurri.com",
+        "contact_number": "0123456789",
+        "address": {
+          "address1": "Innovation House",
+          "address2": "The Bullring",
+          "address3": "",
+          "city": "Wexford",
+          "state": "Wexford",
+          "postcode": "Y35 DW6E",
+          "country": "IE",
+          "store_code": ""
+        },
+        "tax_identifier": ""
+      },
+      "packages": [
+        {
+          "description": "Sample Product",
+          "tracking_number": "9389548",
+          "width": 2,
+          "height": 1,
+          "length": 1,
+          "items": [
+            {
+              "name": "Sample Product",
+              "quantity": 1,
+              "sku": "PRO123",
+              "country_of_origin": "GB",
+              "harmonisation_code": "71131900",
+              "weight": 3,
+              "value": 12
+            }
+          ]
+        }
+      ],
+      "invoice": {
+        "incoterm": ""
+      },
+      "delivery_instructions": "Leave in the garden shed",
+      "currency": "EUR",
+      "options": {
+        "package_type": null
+      },
+      "shipping_method": "",
+      "consignment_number": "000000000008108348",
+      "order_value": null,
+      "tracking_url": "",
+      "service": "Generic International Service",
+      "carrier": "Generic Carrier",
+      "rules_package_type": "",
+      "shipping_date": null,
+      "custom_field_1": "CUSTOM1",
+      "custom_field_2": "CUSTOM2",
+      "export_customs": {}
+    },
+    {
+      "identifier": "TEST4441",
+      "order_number": "TEST4441",
+      "create_date": "2017-05-24T12:03:47+0000",
+      "service_id": "Generic Carrier|Generic International Service GCINT",
+      "warehouse_id": "scurri-live-test|TechHub @Campus",
+      "current_status": {
+        "short_form": "Printed",
+        "status": "Labels printed, shipment ready to manifest.",
+        "rejection_reason": null
+      },
+      "recipient": {
+        "name": "John Smith",
+        "first_name": "",
+        "last_name": "John Smith",
+        "company_name": "Scurri",
+        "email_address": "example-email@scurri.com",
+        "contact_number": "0123456789",
+        "address": {
+          "address1": "Innovation House",
+          "address2": "The Bullring",
+          "address3": "",
+          "city": "Wexford",
+          "state": "Wexford",
+          "postcode": "Y35 DW6E",
+          "country": "IE",
+          "store_code": ""
+        },
+        "tax_identifier": ""
+      },
+      "packages": [
+        {
+          "description": "Sample Product",
+          "tracking_number": "9389546",
+          "width": 2,
+          "height": 1,
+          "length": 3,
+          "items": [
+            {
+              "name": "Sample Product",
+              "quantity": 1,
+              "sku": "PRO123",
+              "country_of_origin": "GB",
+              "harmonisation_code": "71131900",
+              "weight": 0,
+              "value": 7
+            }
+          ]
+        }
+      ],
+      "invoice": {
+        "incoterm": ""
+      },
+      "delivery_instructions": "Leave in the garden shed",
+      "currency": "EUR",
+      "options": {
+        "package_type": null
+      },
+      "shipping_method": "",
+      "consignment_number": "000000000008108347",
+      "order_value": null,
+      "tracking_url": "",
+      "service": "Generic International Service",
+      "carrier": "Generic Carrier",
+      "rules_package_type": "",
+      "shipping_date": null,
+      "custom_field_1": "CUSTOM1",
+      "custom_field_2": "CUSTOM2",
+      "export_customs": {}
+    },
+    {
+      "identifier": "TEST4746",
+      "order_number": "TEST4746",
+      "create_date": "2017-05-24T12:03:52+0000",
+      "service_id": "Generic Carrier|Generic International Service GCINT",
+      "warehouse_id": "scurri-live-test|TechHub @Campus",
+      "current_status": {
+        "short_form": "Printed",
+        "status": "Labels printed, shipment ready to manifest.",
+        "rejection_reason": null
+      },
+      "recipient": {
+        "name": "John Smith",
+        "first_name": "",
+        "last_name": "John Smith",
+        "company_name": "Scurri",
+        "email_address": "example-email@scurri.com",
+        "contact_number": "0123456789",
+        "address": {
+          "address1": "Innovation House",
+          "address2": "The Bullring",
+          "address3": "",
+          "city": "Wexford",
+          "state": "Wexford",
+          "postcode": "Y35 DW6E",
+          "country": "IE",
+          "store_code": ""
+        },
+        "tax_identifier": ""
+      },
+      "packages": [
+        {
+          "description": "Sample Product",
+          "tracking_number": "9389553",
+          "width": 1,
+          "height": 1,
+          "length": 1,
+          "items": [
+            {
+              "name": "Sample Product",
+              "quantity": 0,
+              "sku": "PRO123",
+              "country_of_origin": "GB",
+              "harmonisation_code": "71131900",
+              "weight": 1,
+              "value": 56
+            }
+          ]
+        }
+      ],
+      "invoice": {
+        "incoterm": ""
+      },
+      "delivery_instructions": "Leave in the garden shed",
+      "currency": "EUR",
+      "options": {
+        "package_type": null
+      },
+      "shipping_method": "",
+      "consignment_number": "000000000008108353",
+      "order_value": null,
+      "tracking_url": "",
+      "service": "Generic International Service",
+      "carrier": "Generic Carrier",
+      "rules_package_type": "",
+      "shipping_date": null,
+      "custom_field_1": "CUSTOM1",
+      "custom_field_2": "CUSTOM2",
+      "export_customs": {}
+    },
+    {
+      "identifier": "TEST5021",
+      "order_number": "TEST5021",
+      "create_date": "2017-05-24T12:03:41+0000",
+      "service_id": "Generic Carrier|Generic International Service GCINT",
+      "warehouse_id": "scurri-live-test|TechHub @Campus",
+      "current_status": {
+        "short_form": "Printed",
+        "status": "Labels printed, shipment ready to manifest.",
+        "rejection_reason": null
+      },
+      "recipient": {
+        "name": "John Smith",
+        "first_name": "",
+        "last_name": "John Smith",
+        "company_name": "Scurri",
+        "email_address": "example-email@scurri.com",
+        "contact_number": "0123456789",
+        "address": {
+          "address1": "Innovation House",
+          "address2": "The Bullring",
+          "address3": "",
+          "city": "Wexford",
+          "state": "Wexford",
+          "postcode": "Y35 DW6E",
+          "country": "IE",
+          "store_code": ""
+        },
+        "tax_identifier": ""
+      },
+      "packages": [
+        {
+          "description": "Sample Product",
+          "tracking_number": "9389534",
+          "width": 1,
+          "height": 3,
+          "length": 3,
+          "items": [
+            {
+              "name": "Sample Product",
+              "quantity": 1,
+              "sku": "PRO123",
+              "country_of_origin": "GB",
+              "harmonisation_code": "71131900",
+              "weight": 2,
+              "value": 32
+            }
+          ]
+        }
+      ],
+      "invoice": {
+        "incoterm": ""
+      },
+      "delivery_instructions": "Leave in the garden shed",
+      "currency": "EUR",
+      "options": {
+        "package_type": null
+      },
+      "shipping_method": "",
+      "consignment_number": "000000000008108335",
+      "order_value": null,
+      "tracking_url": "",
+      "service": "Generic International Service",
+      "carrier": "Generic Carrier",
+      "rules_package_type": "",
+      "shipping_date": null,
+      "custom_field_1": "CUSTOM1",
+      "custom_field_2": "CUSTOM2",
+      "export_customs": {}
+    },
+    {
+      "identifier": "TEST5146",
+      "order_number": "TEST5146",
+      "create_date": "2017-05-24T12:03:36+0000",
+      "service_id": "Generic Carrier|Generic International Service GCINT",
+      "warehouse_id": "scurri-live-test|TechHub @Campus",
+      "current_status": {
+        "short_form": "Printed",
+        "status": "Labels printed, shipment ready to manifest.",
+        "rejection_reason": null
+      },
+      "recipient": {
+        "name": "John Smith",
+        "first_name": "",
+        "last_name": "John Smith",
+        "company_name": "Scurri",
+        "email_address": "example-email@scurri.com",
+        "contact_number": "0123456789",
+        "address": {
+          "address1": "Innovation House",
+          "address2": "The Bullring",
+          "address3": "",
+          "city": "Wexford",
+          "state": "Wexford",
+          "postcode": "Y35 DW6E",
+          "country": "IE",
+          "store_code": ""
+        },
+        "tax_identifier": ""
+      },
+      "packages": [
+        {
+          "description": "Sample Product",
+          "tracking_number": "9389522",
+          "width": 1,
+          "height": 1,
+          "length": 2,
+          "items": [
+            {
+              "name": "Sample Product",
+              "quantity": 1,
+              "sku": "PRO123",
+              "country_of_origin": "GB",
+              "harmonisation_code": "71131900",
+              "weight": 0,
+              "value": 69
+            }
+          ]
+        }
+      ],
+      "invoice": {
+        "incoterm": ""
+      },
+      "delivery_instructions": "Leave in the garden shed",
+      "currency": "EUR",
+      "options": {
+        "package_type": null
+      },
+      "shipping_method": "",
+      "consignment_number": "000000000008108323",
+      "order_value": null,
+      "tracking_url": "",
+      "service": "Generic International Service",
+      "carrier": "Generic Carrier",
+      "rules_package_type": "",
+      "shipping_date": null,
+      "custom_field_1": "CUSTOM1",
+      "custom_field_2": "CUSTOM2",
+      "export_customs": {}
+    },
+    {
+      "identifier": "TEST5838",
+      "order_number": "TEST5838",
+      "create_date": "2017-05-24T12:03:32+0000",
+      "service_id": "Generic Carrier|Generic International Service GCINT",
+      "warehouse_id": "scurri-live-test|TechHub @Campus",
+      "current_status": {
+        "short_form": "Printed",
+        "status": "Labels printed, shipment ready to manifest.",
+        "rejection_reason": null
+      },
+      "recipient": {
+        "name": "John Smith",
+        "first_name": "",
+        "last_name": "John Smith",
+        "company_name": "Scurri",
+        "email_address": "example-email@scurri.com",
+        "contact_number": "0123456789",
+        "address": {
+          "address1": "Innovation House",
+          "address2": "The Bullring",
+          "address3": "",
+          "city": "Wexford",
+          "state": "Wexford",
+          "postcode": "Y35 DW6E",
+          "country": "IE",
+          "store_code": ""
+        },
+        "tax_identifier": ""
+      },
+      "packages": [
+        {
+          "description": "Sample Product",
+          "tracking_number": "9389516",
+          "width": 1,
+          "height": 1,
+          "length": 2,
+          "items": [
+            {
+              "name": "Sample Product",
+              "quantity": 3,
+              "sku": "PRO123",
+              "country_of_origin": "GB",
+              "harmonisation_code": "71131900",
+              "weight": 3,
+              "value": 2
+            }
+          ]
+        }
+      ],
+      "invoice": {
+        "incoterm": ""
+      },
+      "delivery_instructions": "Leave in the garden shed",
+      "currency": "EUR",
+      "options": {
+        "package_type": null
+      },
+      "shipping_method": "",
+      "consignment_number": "000000000008108317",
+      "order_value": null,
+      "tracking_url": "",
+      "service": "Generic International Service",
+      "carrier": "Generic Carrier",
+      "rules_package_type": "",
+      "shipping_date": null,
+      "custom_field_1": "CUSTOM1",
+      "custom_field_2": "CUSTOM2",
+      "export_customs": {}
+    }
+  ]
+}
 
 ### Create a New Consignment [POST]
 
