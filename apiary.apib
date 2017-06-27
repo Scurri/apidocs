@@ -270,6 +270,7 @@ consignments of a specific `status`.
                         "packages": [
                             {
                                 "description": "Jeans",
+                                "reference": "CustomerPackageReference1",
                                 "height": 0.5,
                                 "items": [
                                     {
@@ -1085,6 +1086,11 @@ consignments, Scurri will run any allocation processes
 asynchronously. As a result, a label will not be available straight
 away.
 
+If you need a way to associate your internal packages with Scurri packages,
+please use the key `reference` that is available for each `package`.
+
+The `reference` don't need to be unique per company or per item.
+
 You can take a look at the
 [GET consignment](#reference/consignments/consignments/get-a-single-consignment)
 for the payload of this request.
@@ -1117,7 +1123,8 @@ for the payload of this request.
                     ],
                     "length": 10.0,
                     "height": 0.5,
-                    "width": 12.2
+                    "width": 12.2,
+                    "reference": "CustomCustomerReference1"
                   }
                 ],
                 "recipient": {
@@ -1201,6 +1208,7 @@ and get any error messages from the allocation phase.
                 "packages": [
                     {
                         "description": "Jeans",
+                        "reference": "CustomCustomerReference1",
                         "height": 0.5,
                         "items": [
                             {
@@ -1748,7 +1756,8 @@ values, when using this API call.
                   ],
                   "length": 10.0,
                   "height": 0.5,
-                  "width": 12.2
+                  "width": 12.2,
+                  "reference": "CustomCustomerReference1"
                 }
               ],
               "recipient": {
@@ -1798,6 +1807,7 @@ values, when using this API call.
                 "packages": [
                     {
                         "description": "Jeans",
+                        "reference": "CustomCustomerReference1",
                         "height": 0.5,
                         "items": [
                             {
