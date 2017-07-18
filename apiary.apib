@@ -1068,7 +1068,7 @@ after a consignment has been created successfully.  The reason is that
 this way Scurri can decouple importing a consignment from allocating
 it to a specific carrier, each of which has different requirements.
 
-What this means in practice is that a success respons for this API
+What this means in practice is that a success response for this API
 call does not mean that the consignment has been allocated to a
 carrier and service successfully.
 
@@ -1105,6 +1105,7 @@ for the payload of this request.
             [
               {
                 "carrier": "Generic Carrier",
+                "warehouse_id": "api-test-company|Test Warehouse",
                 "service_id": "Generic Carrier|Generic International Service GCINT",
                 "identifier": "8a12630db404424b943e131ce4ee3976",
                 "packages": [
@@ -1738,6 +1739,7 @@ values, when using this API call.
 
             {
               "carrier": "Generic Carrier",
+              "warehouse_id": "api-test-company|Test Warehouse",
               "service_id": "Generic Carrier|Generic International Service GCINT",
               "identifier": "8a12630db404424b943e131ce4ee3976",
               "packages": [
