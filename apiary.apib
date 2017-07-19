@@ -1091,6 +1091,10 @@ please use the key `reference` that is available for each `package`.
 
 The `reference` don't need to be unique per company or per item.
 
+Finally, some carriers support enhancements and carrier-specific options which
+must be specified in the "options" field, in example: Signed Consignments
+("signed") or Package Type ("package_type").
+
 You can take a look at the
 [GET consignment](#reference/consignments/consignments/get-a-single-consignment)
 for the payload of this request.
@@ -1142,7 +1146,11 @@ for the payload of this request.
                   "company_name": "Scurri",
                   "name": "John Doe"
                 },
-                "order_number": "8384832"
+                "order_number": "8384832",
+                "options": {
+                  "package_type": "Parcel",
+                  "signed": "yes"
+                }
               }
             ]
 
@@ -1776,7 +1784,11 @@ values, when using this API call.
                 "company_name": "Scurri",
                 "name": "John Doe"
               },
-              "order_number": "8384832"
+              "order_number": "8384832",
+              "options": {
+                "package_type": "Bag",
+                "signed": "no"
+              }
             }
 
 + Response 200 (application/json)
