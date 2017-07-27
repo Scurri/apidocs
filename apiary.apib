@@ -1109,7 +1109,7 @@ for the payload of this request.
             [
               {
                 "carrier": "Generic Carrier",
-                "warehouse_id": "api-test-company|Test Warehouse",
+                "warehouse_id": "company-slug|Warehouse Name",
                 "service_id": "Generic Carrier|Generic International Service GCINT",
                 "identifier": "8a12630db404424b943e131ce4ee3976",
                 "packages": [
@@ -1258,7 +1258,7 @@ and get any error messages from the allocation phase.
                 "service_id": "Generic Carrier|Generic International Service GCINT",
                 "shipping_method": "",
                 "tracking_url": "",
-                "warehouse_id": "api-test-company|Test Warehouse"
+                "warehouse_id": "company-slug|Warehouse Name"
             }
 
 
@@ -1369,7 +1369,7 @@ and get any error messages from the allocation phase.
                   "maximum": null,
                   "required": false,
                   "defaultValue": null,
-                  "description": "Warehouse ID where the consignment is being processed"
+                  "description": "Warehouse ID where the consignment is being processed. It's composed by the company slug and the warehouse name"
                 },
                 "current_status": {
                   "description": "Current status of the consignment. Read-only",
@@ -1747,7 +1747,7 @@ values, when using this API call.
 
             {
               "carrier": "Generic Carrier",
-              "warehouse_id": "api-test-company|Test Warehouse",
+              "warehouse_id": "company-slug|Warehouse Name",
               "service_id": "Generic Carrier|Generic International Service GCINT",
               "identifier": "8a12630db404424b943e131ce4ee3976",
               "packages": [
@@ -1862,7 +1862,7 @@ values, when using this API call.
                 "service_id": "Generic Carrier|Generic International Service GCINT",
                 "shipping_method": "service_type",
                 "tracking_url": "",
-                "warehouse_id": "api-test-company|Test Warehouse"
+                "warehouse_id": "company-slug|Warehouse Name"
             }
 
 
@@ -2043,7 +2043,7 @@ to the carrier.
                   "required": true
                 },
                 "warehouse_id": {
-                  "description": "Warehouse ID where the consignment is being manifested. Defaults to the company's default warehouse if not specified",
+                  "description": "Warehouse ID where the consignment is being manifested. It's composed by the company slug and the warehouse name. Defaults to the company's default warehouse if not specified",
                   "type": "string",
                   "required": false
                 }
