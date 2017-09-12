@@ -24,11 +24,13 @@ With Basic Auth, you have to send the username and password **base64-encoded** i
 
 Here is some sample code in Python to generate the value of the header:
 
-    >>> import base64
-    >>> username = 'apitest'
-    >>> password = 'api-test-password'
-    >>> print base64.b64encode(username + ':' + password)
-    YXBpdGVzdDphcGktdGVzdC1wYXNzd29yZA==
+```python
+>>> import base64
+>>> username = 'apitest'
+>>> password = 'api-test-password'
+>>> print base64.b64encode(username + ':' + password)
+YXBpdGVzdDphcGktdGVzdC1wYXNzd29yZA==
+```
 
 Failed requests will return a 401 HTTP code with `WWW-Authenticate: Basic` response header.
 
