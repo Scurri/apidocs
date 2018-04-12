@@ -224,6 +224,8 @@ You can also use this API call to search for consignments using
 specific criteria, either for a specific `identifier` or for
 consignments of a specific `status`.
 
+The `Despatched`, `Delivered` and `Exception` statuses are only available if Tracking has been enabled on your account.
+
 + Parameters
     + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
     + offset (string,optional) - The offset for any pagination. This is the string identifier of the last consignment entry in the current batch.
@@ -238,7 +240,10 @@ consignments of a specific `status`.
              + `Printed`
              + `Manifested`
              + `Despatched`
+             + `Delivered`
+             + `Exception`
              + `Cancelled`
+
 
 + Request
     + Headers
@@ -330,6 +335,8 @@ As you can see, in the `next` field, it returns the link to next batch.
 The next returns `null` if it's the last batch.
 Also the count decreases as you traverse using the `next` links.
 
+The `Despatched`, `Delivered` and `Exception` statuses are only available if Tracking has been enabled on your account.
+
 + Parameters
     + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
     + offset: TEST2893 (string,optional) - The offset for any pagination. This is the string identifier of the last consignment entry in the current batch.
@@ -344,6 +351,8 @@ Also the count decreases as you traverse using the `next` links.
              + `Printed`
              + `Manifested`
              + `Despatched`
+             + `Delivered`
+             + `Exception`
              + `Cancelled`
 
 + Request
