@@ -1941,11 +1941,37 @@ makes it easier to send each file to the correct printer.
 + Parameters
     + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
     + consignment_id (string) - The identifier of the consignment.
-    + documenttype (enum[string],optional) - The file format of the result. The available values are `application/pdf` and `image/png`.
+    + documenttype (enum[string],optional) - The file format of the result. The available values are `application/pdf`, `image/png` and `application/x-zebra-zpl`.
+        - Note that setting documenttype to `application/x-zebra-zpl` is only impacting labels, not invoices - they remain PDF as they are A/4.
         + Default: `application/pdf`
         + Members
             + `application/pdf`
             + `image/png`
+            + `application/x-zebra-zpl`
+
+        - ZPL Supported Carriers:
+            + Members
+                + AN POST
+                + COLISSIMO
+                + DEUTSCHE POST
+                + DPD
+                + DPD GERMANY
+                + DPD IRELAND
+                + DX
+                + FASTWAY
+                + GENERIC CARRIER
+                + HERMES
+                + INTERLINK
+                + ITD CARRIER
+                + P2P TRAKPAK
+                + PARCELFORCE
+                + POSTNL
+                + ROYAL MAIL
+                + SPRING GLOBAL
+                + TNT
+                + TUFFNELLS
+                + UKMAIL
+                + YODEL
     + label_quantity (int,optional) - The number of copies of the label you want.
         + Default: 1
     + invoice_quantity (int,optional) - The number of copies for the customs invoice document you want.
