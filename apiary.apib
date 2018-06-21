@@ -1938,6 +1938,15 @@ a document printer). Your account can be configured, so that 6"x4"
 thermal invoices can be concatenated with the respective label. This
 makes it easier to send each file to the correct printer.
 
+Note that setting documenttype to `application/x-zebra-zpl`
+is only impacting labels, not invoices -
+they remain PDF as they are A/4.
+
+ZPL Support Carriers: An Post, Colissimo, Deutsche Post, DPD,
+DPD Germany, DPD Ireland, DX, Fastway, Generic Carrier, Hermes,
+Interlink, ITD Carrier, P2P Trakpak, ParcelForce, PostNL,
+Royal Mail, Spring Global, TNT, Tuffnells, UKMail, Yodel
+
 + Parameters
     + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
     + consignment_id (string) - The identifier of the consignment.
@@ -1948,10 +1957,6 @@ makes it easier to send each file to the correct printer.
             + `application/pdf`
             + `image/png`
             + `application/x-zebra-zpl`
-
-        Note that setting documenttype to `application/x-zebra-zpl` is only impacting labels, not invoices - they remain PDF as they are A/4.
-
-        ZPL Support Carriers: 
 
     + label_quantity (int,optional) - The number of copies of the label you want.
         + Default: 1
