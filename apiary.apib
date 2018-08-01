@@ -145,13 +145,16 @@ in the rest of the API calls, whenever a **Service** needs to be
 specified.
 
 ## List all the carrier services for the logged in user [GET]
+This is an example of the Carrier Services call with the response.
+
+The test URL was `https://api.scurri.co.uk/v1/company/scurri-live-test/carrierservices`.
 
 + Parameters
     + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
     + enhancements: (boolean, optional) - Whether to include `enhancements` in the response
-        + Default = False
+        + Default: false
     + package_types: (boolean, optional) - Whether to include `package types` in the response
-        + Default = False
+        + Default: false
 + Request
     + Headers
 
@@ -169,6 +172,43 @@ specified.
                     "carrier_id": "Generic Carrier",
                     "identifier": "Generic Carrier|Generic Domestic Service GDOM",
                     "name": "Generic Domestic Service"
+                }
+            ]
+
+## Example of carrier services for the logged in user with options[GET /company/{company_slug}/carrierservices{?enhancements,package_types}]
+This is an example of the Carrier Services call with the response including Enhancements and Package Types.
+
+The test URL was `https://api.scurri.co.uk/v1/company/scurri-live-test/carrierservices?enhancements=true&package_types=true`.
+
+The available Enhancements and Package Types will be returned in the response
+
++ Parameters
+    + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
+    + enhancements: true (boolean, optional) - Whether to include `enhancements` in the response
+        + Default: false
+    + package_types: true (boolean, optional) - Whether to include `package types` in the response
+        + Default: false
++ Request
+    + Headers
+
+            Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
+
++ Response 200 (application/json)
+
+            [
+                {
+                    "carrier_id": "Generic Carrier",
+                    "identifier": "Generic Carrier|Generic International Service GCINT",
+                    "name": "Generic International Service",
+                    "enhancements":[],
+                    "package_types":[]
+                },
+                {
+                    "carrier_id": "Generic Carrier",
+                    "identifier": "Generic Carrier|Generic Domestic Service GDOM",
+                    "name": "Generic Domestic Service",
+                    "enhancements":[],
+                    "package_types":[]
                 }
             ]
 
