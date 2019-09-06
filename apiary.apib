@@ -3,27 +3,33 @@ HOST: https://sandbox.scurri.co.uk/api/v1
 
 # Scurri API
 
-The Scurri Platform API is a RESTful web service that offers import
-and update functionality for consignments, documents and manifests.
+The Scurri Platform API is a RESTful web service that offers functionality for importing and updating consignments, getting tracking information, and generating documents and manifests.
+### Core Functions
 
-## HTTP Codes
+The high-level process of Scurri is:
 
-HTTP codes are used to differentiate between successful and failed
-responses. As per the HTTP standard: 20x codes are for successful
-requests, 40x codes for errors with validation or permissions, 50x
-codes for unexpected internal server errors.
+1. Importing/creating consignments
+2. Getting the labels (and commercial invoices if required) for consignments
+3. Getting the tracking information for consignments
+4. Manifesting consignments
+
+## Using the Scurri API
+
+### HTTP Codes
+
+HTTP codes are used to differentiate between successful and failed responses. As per the HTTP standard, we return:
+- 20x codes to indicate successful requests,
+- 40x codes to indicate errors with validation or permissions,
+- 50x codes to indicate unexpected internal server errors.
 
 
-## Authentication
+### Authentication
 
-All requests must be authenticated using [Basic
-Auth](https://en.wikipedia.org/wiki/Basic_access_authentication#Client_side).
-
-With Basic Auth, you have to send the username and password **base64-encoded** in the standard Basic manner, e.g.
+All requests must be authenticated using [Basic Auth](https://en.wikipedia.org/wiki/Basic_access_authentication#Client_side).
+With Basic Auth, you must send the username and password **base64-encoded** in the standard Basic manner, e.g.
 `Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==`.
 
 Here is some sample code in Python to generate the value of the header:
-
 ```python
 >>> import base64
 >>> username = 'apitest'
@@ -31,90 +37,67 @@ Here is some sample code in Python to generate the value of the header:
 >>> print base64.b64encode(username + ':' + password)
 YXBpdGVzdDphcGktdGVzdC1wYXNzd29yZA==
 ```
+Failed requests will return a 401 HTTP code with
+`WWW-Authenticate: Basic` response header.
 
-Failed requests will return a 401 HTTP code with `WWW-Authenticate: Basic` response header.
+### Request format
 
-## Request format
+All body payloads must be in JSON format, unless stated otherwise. As a result, the `Content-Type` header must be set to `application/json`.
 
-All body payloads must be in JSON format, unless stated otherwise.
+The Scurri API works via HTTPS so that the connection is encrypted.
 
-As a result, the `Content-Type` header must be set to `application/json`.
+The Scurri API is currently at version 1. This means that all URLs should be prefixed with the path `/v1/`.
 
-## Using the Scurri API
+The base URL for API calls for your sandbox account will look like this:
+`https://sandbox.scurri.co.uk/api/v1/company/[your-company-slug]/`
 
-### General
+Once you move to production, the base URL will look slightly different:
+`https://api.scurri.co.uk/v1/company/[your-company-slug]/`
 
-The most important features of the Scurri API are:
-
-- Importing consignments
-- Getting the necessary documents (labels and/or commercial invoices)
-- Manifesting consignments
-
-The Scurri API works only on top of HTTPS, so that the connection is
-encrypted.
-
-The Scurri API is currently at version 1. This means that all URLs
-should be prefixed with the path `/v1/`.
+Note that the `/api` after the domain in the URL is not present in production.
+If you leave this in when moving to production, the call will fail.
 
 ### Concepts
 
-Each company is assigned a **slug**, which is an identifier for this
-company and is used in all URLs of this API. The slug can be found in
-the URLs used in Scurri: it is the value after the path `company` and
-until the next forward slash (`/`). That is, in the URL
-`/company/my-company/manifests` the slug is the value `my-company`.
+Each company is assigned a **slug**, which is the unique identifier for this company and is used in all URLs of this API. The slug can be found in the URLs used in the Scurri UI.
+It is the value after the path `company` and until the next forward slash (`/`).
+For example, in:
+`https://sandbox.scurri.co.uk/company/scurri-testing-account/manifests`
+The slug is `scurri-testing-account`.
 
-Each consignment is identified by a unique **identifier** which you
-can optionally provide. This identifier should be unique across all of your
-consignments. If all of your orders correspond to a single
-consignment, then the order number is a good candidate for this. If
-you do not provide an identifier for the consignments, scurri will
-generate a unique id.
+To log in to the Scurri UI, please use the below URLs.
+Sandbox - `https://sandbox.scurri.co.uk`
+Production - `https://data.scurri.co.uk`
+
+Upon creation, each consignment is assigned a unique **identifier**, which is then used for all further actions with that consignment. If you do not provide an identifier for the consignment, Scurri will generate one for you and return this in the response.
+This identifier should be unique across all of your consignments. If all of your orders correspond to a single consignment, you could use the order number for this. If not, then allowing Scurri to generate this identifier will work best. (Bear in mind partial shipments and backorders)
 
 ### Consignment Lifecycle
 
 #### Importing consignments
 
-The first step is to import your consignments into Scurri. They can be imported individually (one by one) or as part of a batch. Scurri has optimized the
-import process to support importing thousands of consignments in one
-API call.
+The first step is to import your consignments into Scurri. They can be imported individually (one by one) or as part of a batch. Scurri has optimized the import process to support importing thousands of consignments in one API call.
 
 #### Getting the label for a consignment
 
-After a consignment has been imported, Scurri will automatically
-allocate it to a carrier and a service based on the shipment rules you
-have defined in our user interface, alternatively you can specificy these values in the API (and in doing so overwrite any shipment rules that may already be set up).
+After a consignment has been imported, Scurri will automatically allocate it to a carrier and a service based on the shipment rules you have defined in our user interface, alternatively you can specify these values in the API (and in doing so overwrite any shipment rules that may already be set up).
 
-At this point Scurri will try to validate that the consignment meets the
-criteria for using the specified carrier and service, e.g. typically these would be the weight limits,
-dimension limits and destination restrictions.
+At this point Scurri will try to validate that the consignment meets the criteria for using the specified carrier and service, e.g. typically these would be the weight limits, dimension limits and destination restrictions.
 
-If the consignment does not fail the validation step you can download
-its label(s) and any customs documentation required, either as PDF documents or
-PNG. The latter is useful for embedding the label(s) in another document.
+If the consignment does not fail the validation step you can download its label(s) and any customs documentation required, either as PDF documents, ZPL files, or PNG images. The latter is useful for embedding the label(s) in another document.
 After the label has been generated, the tracking number for the consignment is available in the consignment details.
 
-If, on the other hand, this validation had failed (that it exceeds the
-weight, dimension or destination limits and restrictions) then you
-would get an error back with the reason the validation failed.
+If, on the other hand, this validation had failed (that it exceeds the weight, dimension or destination limits and restrictions) then you would get an error back with the reason the validation failed.
 
 #### Manifesting consignments
 
-The last step is marking the consignments as manifested. When you do
-this, Scurri will generate the manifest documentation that you may
-have to provide to the carrier and at the same time notify the
-carrier. Note - Once you've manifested a conisgnment it will no longer
-be available for editing.
+The last step is marking the consignments as manifested. When you do this, Scurri will generate the manifest documentation that you may have to provide to the carrier and at the same time notify the carrier. Note - Once you've manifested a consignment it will no longer be available for editing.
 
 # Carriers [/company/{company_slug}/carriers/]
 
-The Carriers API allows you to query Scurri for the carriers that are
-enabled in your account.
+The Carriers API allows you to query Scurri for the carriers that are enabled in your account.
 
-The result contains the identifier for each carrier, which you can use
-in the rest of the API calls, whenever a **Carrier** needs to be
-specified.  The identifier will never change, so this can be called
-once to get the values.
+The result contains the identifier for each carrier, which you can use in the rest of the API calls, whenever a **Carrier** needs to be specified.  The identifier will never change, so this can be called once to get the values.
 
 ## List all the carriers for the logged in user [GET]
 
@@ -137,17 +120,14 @@ once to get the values.
 
 # Carrier Services [/company/{company_slug}/carrierservices/]
 
-The CarrierServices API allows you to retrieve a list of services that
-have been enabled in your account.
+The CarrierServices API allows you to retrieve a list of services that have been enabled in your account.
 
-The result contains the identifier for each service, which you can use
-in the rest of the API calls, whenever a **Service** needs to be
-specified.
+The result contains the identifier for each service, which you can use in the rest of the API calls, whenever a **Service** needs to be specified.
 
 ## List all the carrier services for the logged in user [GET]
 This is an example of the Carrier Services call with the response.
 
-The test URL was `https://api.scurri.co.uk/v1/company/scurri-live-test/carrierservices`.
+The test URL was `https://api.scurri.co.uk/v1/company/scurri-live-test/carrierservices`
 
 + Parameters
     + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
@@ -214,12 +194,9 @@ The available Enhancements and Package Types will be returned in the response
 
 # Warehouses [/company/{company_slug}/warehouses/]
 
-The Warehouses API allows you to retrieve a list of warehouses that
-you have access to (within a company).
+The Warehouses API allows you to retrieve a list of warehouses that you have access to (within a company).
 
-The result contains the identifier for each warehouse, which you can
-use in the rest of the API calls, whenever a **Warehouse** needs to be
-specified.
+The result contains the identifier for each warehouse, which you can use in the rest of the API calls, whenever a **Warehouse** needs to be specified.
 
 ## List all the warehouses the user has access to [GET]
 
@@ -243,918 +220,23 @@ specified.
 
 ## Consignments Collection [/company/{company_slug}/consignments/]
 
-This group of API calls allow you to interact with your consignments
-in Scurri. You can list and search through them, create new ones, get
-their status and print the necessary documentation (labels and custom
-invoices, when needed).
-
-+ Parameters
-    + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
-
-### Get the list of created consignments [GET /company/{company_slug}/consignments/{?offset,limit,identifier,status}]
-
-You can get use this API call to retrieve the list of consignments in
-Scurri.
-
-Pagination is provided via the `offset` and `limit` GET parameters.
-
-For the `offset`, we don't use an integer value but instead use the last
-`identifier` of the current batch. The `next` value returned with the
-response body contains a URL you can use to retrieve the next batch.
-
-Example offset URL: `https://api.scurri.co.uk/v1/company/test-company/consignments/?offset=000ed1bfb93c43319ec79247f50dfd3c`
-
-You can also use this API call to search for consignments using
-specific criteria, either for a specific `identifier` or for
-consignments of a specific `status`.
-
-The `Despatched`, `Delivered` and `Exception` statuses are only available if Tracking has been enabled on your account.
-
-+ Parameters
-    + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
-    + offset (string,optional) - The offset for any pagination. This is the string identifier of the last consignment entry in the current batch.
-        + Default: ''
-    + limit (int,optional) - How many results to return for a request.
-        + Default: 10
-    + identifier: `myidentifier` (string,optional) - Search for the consignment with the given identifier.
-    + status: `Unallocated` (enum[string],optional) - Search for consignments with a specific status.
-        + Members
-             + `Unallocated`
-             + `Allocated`
-             + `Printed`
-             + `Manifested`
-             + `Despatched`
-             + `Delivered`
-             + `Exception`
-             + `Cancelled`
-
-
-+ Request
-    + Headers
-
-                Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
-
-+ Response 200 (application/json)
-
-            {
-                "count": 1,
-                "next": null,
-                "results": [
-                    {
-                        "carrier": "Generic Carrier",
-                        "consignment_number": null,
-                        "create_date": "2016-03-28T11:53:31+0000",
-                        "currency": "GBP",
-                        "current_status": {
-                            "rejection_reason": null,
-                            "short_form": "Allocated",
-                            "status": "Carrier and service allocated"
-                        },
-                        "delivery_instructions": "",
-                        "identifier": "8a12630db404424b943e131ce4ee3976",
-                        "invoice": {
-                            "incoterm": ""
-                        },
-                        "options": {
-                            "package_type": null
-                        },
-                        "order_number": "8384832",
-                        "order_value": null,
-                        "packages": [
-                            {
-                                "description": "Jeans",
-                                "reference": "CustomerPackageReference1",
-                                "height": 0.5,
-                                "items": [
-                                    {
-                                        "country_of_origin": "GB",
-                                        "harmonisation_code": "5201",
-                                        "name": "Jeans",
-                                        "quantity": 1,
-                                        "sku": "822 JEANS",
-                                        "value": 25.55,
-                                        "weight": 1.0
-                                    }
-                                ],
-                                "length": 10.0,
-                                "tracking_number": null,
-                                "width": 12.2
-                            }
-                        ],
-                        "recipient": {
-                            "address": {
-                                "address1": "Innovation House",
-                                "address2": "The Bullring",
-                                "address3": "",
-                                "city": "Wexford",
-                                "country": "IE",
-                                "postcode": "Y35 DW6E",
-                                "state": "Wexford",
-                                "store_code": ""
-                            },
-                            "company_name": "Scurri",
-                            "contact_number": "072 8848292234",
-                            "email_address": "john@scurri.com",
-                            "first_name": "",
-                            "last_name": "John Doe",
-                            "name": "John Doe"
-                        },
-                        "rules_package_type": "Shipment 44147 : None",
-                        "service": "Generic International Service",
-                        "service_id": "Generic Carrier|Generic International Service GCINT",
-                        "shipping_method": "",
-                        "tracking_url": "",
-                        "warehouse_id": "api-test-company|Test Warehouse"
-                    }
-                ]
-            }
-
-### Example Offset with Multiple Pages [GET /company/{company_slug}/consignments/{?offset,limit,status}]
-
-This is an example `offset` with the response.
-
-The test URL was `https://api.scurri.co.uk/v1/company/scurri-live-test/consignments/?offset=TEST2893&status=Printed`.
-
-As you can see, in the `next` field, it returns the link to next batch.
-The next returns `null` if it's the last batch.
-Also the count decreases as you traverse using the `next` links.
-
-The `Despatched`, `Delivered` and `Exception` statuses are only available if Tracking has been enabled on your account.
-
-+ Parameters
-    + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
-    + offset: TEST2893 (string,optional) - The offset for any pagination. This is the string identifier of the last consignment entry in the current batch.
-        + Default: ''
-    + limit: (int,optional) - How many results to return for a request.
-        + Default: 10
-    + identifier: (string,optional) - Search for the consignment with the given identifier.
-    + status: Printed (enum[string],optional) - Search for consignments with a specific status.
-        + Members
-             + `Unallocated`
-             + `Allocated`
-             + `Printed`
-             + `Manifested`
-             + `Despatched`
-             + `Delivered`
-             + `Exception`
-             + `Cancelled`
-
-+ Request
-    + Headers
-
-                Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
-
-+ Response 200 (application/json)
-
-{
-  "count": 23,
-  "next": "https://api.scurri.co.uk/v1/company/scurri-live-test/consignments/?offset=TEST5838&status=Printed",
-  "results": [
-    {
-      "identifier": "TEST3019",
-      "order_number": "TEST3019",
-      "create_date": "2017-05-24T12:03:12+0000",
-      "service_id": "Generic Carrier|Generic International Service GCINT",
-      "warehouse_id": "scurri-live-test|TechHub @Campus",
-      "current_status": {
-        "short_form": "Printed",
-        "status": "Labels printed, shipment ready to manifest.",
-        "rejection_reason": null
-      },
-      "recipient": {
-        "name": "John Smith",
-        "first_name": "",
-        "last_name": "John Smith",
-        "company_name": "Scurri",
-        "email_address": "example-email@scurri.com",
-        "contact_number": "0123456789",
-        "address": {
-          "address1": "Innovation House",
-          "address2": "The Bullring",
-          "address3": "",
-          "city": "Wexford",
-          "state": "Wexford",
-          "postcode": "Y35 DW6E",
-          "country": "IE",
-          "store_code": ""
-        },
-        "tax_identifier": ""
-      },
-      "packages": [
-        {
-          "description": "Sample Product",
-          "tracking_number": "9389491",
-          "width": 3,
-          "height": 1,
-          "length": 1,
-          "items": [
-            {
-              "name": "Sample Product",
-              "quantity": 2,
-              "sku": "PRO123",
-              "country_of_origin": "GB",
-              "harmonisation_code": "71131900",
-              "weight": 2,
-              "value": 5
-            }
-          ]
-        }
-      ],
-      "invoice": {
-        "incoterm": ""
-      },
-      "delivery_instructions": "Leave in the garden shed",
-      "currency": "EUR",
-      "options": {
-        "package_type": null
-      },
-      "shipping_method": "",
-      "consignment_number": "000000000008108293",
-      "order_value": null,
-      "tracking_url": "",
-      "service": "Generic International Service",
-      "carrier": "Generic Carrier",
-      "rules_package_type": "",
-      "shipping_date": null,
-      "custom_field_1": "CUSTOM1",
-      "custom_field_2": "CUSTOM2",
-      "export_customs": {}
-    },
-    {
-      "identifier": "TEST3027",
-      "order_number": "TEST3027",
-      "create_date": "2017-05-24T12:03:45+0000",
-      "service_id": "Generic Carrier|Generic International Service GCINT",
-      "warehouse_id": "scurri-live-test|TechHub @Campus",
-      "current_status": {
-        "short_form": "Printed",
-        "status": "Labels printed, shipment ready to manifest.",
-        "rejection_reason": null
-      },
-      "recipient": {
-        "name": "John Smith",
-        "first_name": "",
-        "last_name": "John Smith",
-        "company_name": "Scurri",
-        "email_address": "example-email@scurri.com",
-        "contact_number": "0123456789",
-        "address": {
-          "address1": "Innovation House",
-          "address2": "The Bullring",
-          "address3": "",
-          "city": "Wexford",
-          "state": "Wexford",
-          "postcode": "Y35 DW6E",
-          "country": "IE",
-          "store_code": ""
-        },
-        "tax_identifier": ""
-      },
-      "packages": [
-        {
-          "description": "Sample Product",
-          "tracking_number": "9389542",
-          "width": 1,
-          "height": 2,
-          "length": 3,
-          "items": [
-            {
-              "name": "Sample Product",
-              "quantity": 2,
-              "sku": "PRO123",
-              "country_of_origin": "GB",
-              "harmonisation_code": "71131900",
-              "weight": 0,
-              "value": 5
-            }
-          ]
-        }
-      ],
-      "invoice": {
-        "incoterm": ""
-      },
-      "delivery_instructions": "Leave in the garden shed",
-      "currency": "EUR",
-      "options": {
-        "package_type": null
-      },
-      "shipping_method": "",
-      "consignment_number": "000000000008108343",
-      "order_value": null,
-      "tracking_url": "",
-      "service": "Generic International Service",
-      "carrier": "Generic Carrier",
-      "rules_package_type": "",
-      "shipping_date": null,
-      "custom_field_1": "CUSTOM1",
-      "custom_field_2": "CUSTOM2",
-      "export_customs": {}
-    },
-    {
-      "identifier": "TEST334",
-      "order_number": "TEST334",
-      "create_date": "2017-05-24T12:03:43+0000",
-      "service_id": "Generic Carrier|Generic International Service GCINT",
-      "warehouse_id": "scurri-live-test|TechHub @Campus",
-      "current_status": {
-        "short_form": "Printed",
-        "status": "Labels printed, shipment ready to manifest.",
-        "rejection_reason": null
-      },
-      "recipient": {
-        "name": "John Smith",
-        "first_name": "",
-        "last_name": "John Smith",
-        "company_name": "Scurri",
-        "email_address": "example-email@scurri.com",
-        "contact_number": "0123456789",
-        "address": {
-          "address1": "Innovation House",
-          "address2": "The Bullring",
-          "address3": "",
-          "city": "Wexford",
-          "state": "Wexford",
-          "postcode": "Y35 DW6E",
-          "country": "IE",
-          "store_code": ""
-        },
-        "tax_identifier": ""
-      },
-      "packages": [
-        {
-          "description": "Sample Product",
-          "tracking_number": "9389538",
-          "width": 2,
-          "height": 1,
-          "length": 1,
-          "items": [
-            {
-              "name": "Sample Product",
-              "quantity": 0,
-              "sku": "PRO123",
-              "country_of_origin": "GB",
-              "harmonisation_code": "71131900",
-              "weight": 1,
-              "value": 79
-            }
-          ]
-        }
-      ],
-      "invoice": {
-        "incoterm": ""
-      },
-      "delivery_instructions": "Leave in the garden shed",
-      "currency": "EUR",
-      "options": {
-        "package_type": null
-      },
-      "shipping_method": "",
-      "consignment_number": "000000000008108339",
-      "order_value": null,
-      "tracking_url": "",
-      "service": "Generic International Service",
-      "carrier": "Generic Carrier",
-      "rules_package_type": "",
-      "shipping_date": null,
-      "custom_field_1": "CUSTOM1",
-      "custom_field_2": "CUSTOM2",
-      "export_customs": {}
-    },
-    {
-      "identifier": "TEST3618",
-      "order_number": "TEST3618",
-      "create_date": "2017-05-24T12:03:44+0000",
-      "service_id": "Generic Carrier|Generic International Service GCINT",
-      "warehouse_id": "scurri-live-test|TechHub @Campus",
-      "current_status": {
-        "short_form": "Printed",
-        "status": "Labels printed, shipment ready to manifest.",
-        "rejection_reason": null
-      },
-      "recipient": {
-        "name": "John Smith",
-        "first_name": "",
-        "last_name": "John Smith",
-        "company_name": "Scurri",
-        "email_address": "example-email@scurri.com",
-        "contact_number": "0123456789",
-        "address": {
-          "address1": "Innovation House",
-          "address2": "The Bullring",
-          "address3": "",
-          "city": "Wexford",
-          "state": "Wexford",
-          "postcode": "Y35 DW6E",
-          "country": "IE",
-          "store_code": ""
-        },
-        "tax_identifier": ""
-      },
-      "packages": [
-        {
-          "description": "Sample Product",
-          "tracking_number": "9389539",
-          "width": 3,
-          "height": 2,
-          "length": 1,
-          "items": [
-            {
-              "name": "Sample Product",
-              "quantity": 1,
-              "sku": "PRO123",
-              "country_of_origin": "GB",
-              "harmonisation_code": "71131900",
-              "weight": 2,
-              "value": 55
-            }
-          ]
-        }
-      ],
-      "invoice": {
-        "incoterm": ""
-      },
-      "delivery_instructions": "Leave in the garden shed",
-      "currency": "EUR",
-      "options": {
-        "package_type": null
-      },
-      "shipping_method": "",
-      "consignment_number": "000000000008108340",
-      "order_value": null,
-      "tracking_url": "",
-      "service": "Generic International Service",
-      "carrier": "Generic Carrier",
-      "rules_package_type": "",
-      "shipping_date": null,
-      "custom_field_1": "CUSTOM1",
-      "custom_field_2": "CUSTOM2",
-      "export_customs": {}
-    },
-    {
-      "identifier": "TEST3939",
-      "order_number": "TEST3939",
-      "create_date": "2017-05-24T12:03:48+0000",
-      "service_id": "Generic Carrier|Generic International Service GCINT",
-      "warehouse_id": "scurri-live-test|TechHub @Campus",
-      "current_status": {
-        "short_form": "Printed",
-        "status": "Labels printed, shipment ready to manifest.",
-        "rejection_reason": null
-      },
-      "recipient": {
-        "name": "John Smith",
-        "first_name": "",
-        "last_name": "John Smith",
-        "company_name": "Scurri",
-        "email_address": "example-email@scurri.com",
-        "contact_number": "0123456789",
-        "address": {
-          "address1": "Innovation House",
-          "address2": "The Bullring",
-          "address3": "",
-          "city": "Wexford",
-          "state": "Wexford",
-          "postcode": "Y35 DW6E",
-          "country": "IE",
-          "store_code": ""
-        },
-        "tax_identifier": ""
-      },
-      "packages": [
-        {
-          "description": "Sample Product",
-          "tracking_number": "9389548",
-          "width": 2,
-          "height": 1,
-          "length": 1,
-          "items": [
-            {
-              "name": "Sample Product",
-              "quantity": 1,
-              "sku": "PRO123",
-              "country_of_origin": "GB",
-              "harmonisation_code": "71131900",
-              "weight": 3,
-              "value": 12
-            }
-          ]
-        }
-      ],
-      "invoice": {
-        "incoterm": ""
-      },
-      "delivery_instructions": "Leave in the garden shed",
-      "currency": "EUR",
-      "options": {
-        "package_type": null
-      },
-      "shipping_method": "",
-      "consignment_number": "000000000008108348",
-      "order_value": null,
-      "tracking_url": "",
-      "service": "Generic International Service",
-      "carrier": "Generic Carrier",
-      "rules_package_type": "",
-      "shipping_date": null,
-      "custom_field_1": "CUSTOM1",
-      "custom_field_2": "CUSTOM2",
-      "export_customs": {}
-    },
-    {
-      "identifier": "TEST4441",
-      "order_number": "TEST4441",
-      "create_date": "2017-05-24T12:03:47+0000",
-      "service_id": "Generic Carrier|Generic International Service GCINT",
-      "warehouse_id": "scurri-live-test|TechHub @Campus",
-      "current_status": {
-        "short_form": "Printed",
-        "status": "Labels printed, shipment ready to manifest.",
-        "rejection_reason": null
-      },
-      "recipient": {
-        "name": "John Smith",
-        "first_name": "",
-        "last_name": "John Smith",
-        "company_name": "Scurri",
-        "email_address": "example-email@scurri.com",
-        "contact_number": "0123456789",
-        "address": {
-          "address1": "Innovation House",
-          "address2": "The Bullring",
-          "address3": "",
-          "city": "Wexford",
-          "state": "Wexford",
-          "postcode": "Y35 DW6E",
-          "country": "IE",
-          "store_code": ""
-        },
-        "tax_identifier": ""
-      },
-      "packages": [
-        {
-          "description": "Sample Product",
-          "tracking_number": "9389546",
-          "width": 2,
-          "height": 1,
-          "length": 3,
-          "items": [
-            {
-              "name": "Sample Product",
-              "quantity": 1,
-              "sku": "PRO123",
-              "country_of_origin": "GB",
-              "harmonisation_code": "71131900",
-              "weight": 0,
-              "value": 7
-            }
-          ]
-        }
-      ],
-      "invoice": {
-        "incoterm": ""
-      },
-      "delivery_instructions": "Leave in the garden shed",
-      "currency": "EUR",
-      "options": {
-        "package_type": null
-      },
-      "shipping_method": "",
-      "consignment_number": "000000000008108347",
-      "order_value": null,
-      "tracking_url": "",
-      "service": "Generic International Service",
-      "carrier": "Generic Carrier",
-      "rules_package_type": "",
-      "shipping_date": null,
-      "custom_field_1": "CUSTOM1",
-      "custom_field_2": "CUSTOM2",
-      "export_customs": {}
-    },
-    {
-      "identifier": "TEST4746",
-      "order_number": "TEST4746",
-      "create_date": "2017-05-24T12:03:52+0000",
-      "service_id": "Generic Carrier|Generic International Service GCINT",
-      "warehouse_id": "scurri-live-test|TechHub @Campus",
-      "current_status": {
-        "short_form": "Printed",
-        "status": "Labels printed, shipment ready to manifest.",
-        "rejection_reason": null
-      },
-      "recipient": {
-        "name": "John Smith",
-        "first_name": "",
-        "last_name": "John Smith",
-        "company_name": "Scurri",
-        "email_address": "example-email@scurri.com",
-        "contact_number": "0123456789",
-        "address": {
-          "address1": "Innovation House",
-          "address2": "The Bullring",
-          "address3": "",
-          "city": "Wexford",
-          "state": "Wexford",
-          "postcode": "Y35 DW6E",
-          "country": "IE",
-          "store_code": ""
-        },
-        "tax_identifier": ""
-      },
-      "packages": [
-        {
-          "description": "Sample Product",
-          "tracking_number": "9389553",
-          "width": 1,
-          "height": 1,
-          "length": 1,
-          "items": [
-            {
-              "name": "Sample Product",
-              "quantity": 0,
-              "sku": "PRO123",
-              "country_of_origin": "GB",
-              "harmonisation_code": "71131900",
-              "weight": 1,
-              "value": 56
-            }
-          ]
-        }
-      ],
-      "invoice": {
-        "incoterm": ""
-      },
-      "delivery_instructions": "Leave in the garden shed",
-      "currency": "EUR",
-      "options": {
-        "package_type": null
-      },
-      "shipping_method": "",
-      "consignment_number": "000000000008108353",
-      "order_value": null,
-      "tracking_url": "",
-      "service": "Generic International Service",
-      "carrier": "Generic Carrier",
-      "rules_package_type": "",
-      "shipping_date": null,
-      "custom_field_1": "CUSTOM1",
-      "custom_field_2": "CUSTOM2",
-      "export_customs": {}
-    },
-    {
-      "identifier": "TEST5021",
-      "order_number": "TEST5021",
-      "create_date": "2017-05-24T12:03:41+0000",
-      "service_id": "Generic Carrier|Generic International Service GCINT",
-      "warehouse_id": "scurri-live-test|TechHub @Campus",
-      "current_status": {
-        "short_form": "Printed",
-        "status": "Labels printed, shipment ready to manifest.",
-        "rejection_reason": null
-      },
-      "recipient": {
-        "name": "John Smith",
-        "first_name": "",
-        "last_name": "John Smith",
-        "company_name": "Scurri",
-        "email_address": "example-email@scurri.com",
-        "contact_number": "0123456789",
-        "address": {
-          "address1": "Innovation House",
-          "address2": "The Bullring",
-          "address3": "",
-          "city": "Wexford",
-          "state": "Wexford",
-          "postcode": "Y35 DW6E",
-          "country": "IE",
-          "store_code": ""
-        },
-        "tax_identifier": ""
-      },
-      "packages": [
-        {
-          "description": "Sample Product",
-          "tracking_number": "9389534",
-          "width": 1,
-          "height": 3,
-          "length": 3,
-          "items": [
-            {
-              "name": "Sample Product",
-              "quantity": 1,
-              "sku": "PRO123",
-              "country_of_origin": "GB",
-              "harmonisation_code": "71131900",
-              "weight": 2,
-              "value": 32
-            }
-          ]
-        }
-      ],
-      "invoice": {
-        "incoterm": ""
-      },
-      "delivery_instructions": "Leave in the garden shed",
-      "currency": "EUR",
-      "options": {
-        "package_type": null
-      },
-      "shipping_method": "",
-      "consignment_number": "000000000008108335",
-      "order_value": null,
-      "tracking_url": "",
-      "service": "Generic International Service",
-      "carrier": "Generic Carrier",
-      "rules_package_type": "",
-      "shipping_date": null,
-      "custom_field_1": "CUSTOM1",
-      "custom_field_2": "CUSTOM2",
-      "export_customs": {}
-    },
-    {
-      "identifier": "TEST5146",
-      "order_number": "TEST5146",
-      "create_date": "2017-05-24T12:03:36+0000",
-      "service_id": "Generic Carrier|Generic International Service GCINT",
-      "warehouse_id": "scurri-live-test|TechHub @Campus",
-      "current_status": {
-        "short_form": "Printed",
-        "status": "Labels printed, shipment ready to manifest.",
-        "rejection_reason": null
-      },
-      "recipient": {
-        "name": "John Smith",
-        "first_name": "",
-        "last_name": "John Smith",
-        "company_name": "Scurri",
-        "email_address": "example-email@scurri.com",
-        "contact_number": "0123456789",
-        "address": {
-          "address1": "Innovation House",
-          "address2": "The Bullring",
-          "address3": "",
-          "city": "Wexford",
-          "state": "Wexford",
-          "postcode": "Y35 DW6E",
-          "country": "IE",
-          "store_code": ""
-        },
-        "tax_identifier": ""
-      },
-      "packages": [
-        {
-          "description": "Sample Product",
-          "tracking_number": "9389522",
-          "width": 1,
-          "height": 1,
-          "length": 2,
-          "items": [
-            {
-              "name": "Sample Product",
-              "quantity": 1,
-              "sku": "PRO123",
-              "country_of_origin": "GB",
-              "harmonisation_code": "71131900",
-              "weight": 0,
-              "value": 69
-            }
-          ]
-        }
-      ],
-      "invoice": {
-        "incoterm": ""
-      },
-      "delivery_instructions": "Leave in the garden shed",
-      "currency": "EUR",
-      "options": {
-        "package_type": null
-      },
-      "shipping_method": "",
-      "consignment_number": "000000000008108323",
-      "order_value": null,
-      "tracking_url": "",
-      "service": "Generic International Service",
-      "carrier": "Generic Carrier",
-      "rules_package_type": "",
-      "shipping_date": null,
-      "custom_field_1": "CUSTOM1",
-      "custom_field_2": "CUSTOM2",
-      "export_customs": {}
-    },
-    {
-      "identifier": "TEST5838",
-      "order_number": "TEST5838",
-      "create_date": "2017-05-24T12:03:32+0000",
-      "service_id": "Generic Carrier|Generic International Service GCINT",
-      "warehouse_id": "scurri-live-test|TechHub @Campus",
-      "current_status": {
-        "short_form": "Printed",
-        "status": "Labels printed, shipment ready to manifest.",
-        "rejection_reason": null
-      },
-      "recipient": {
-        "name": "John Smith",
-        "first_name": "",
-        "last_name": "John Smith",
-        "company_name": "Scurri",
-        "email_address": "example-email@scurri.com",
-        "contact_number": "0123456789",
-        "address": {
-          "address1": "Innovation House",
-          "address2": "The Bullring",
-          "address3": "",
-          "city": "Wexford",
-          "state": "Wexford",
-          "postcode": "Y35 DW6E",
-          "country": "IE",
-          "store_code": ""
-        },
-        "tax_identifier": ""
-      },
-      "packages": [
-        {
-          "description": "Sample Product",
-          "tracking_number": "9389516",
-          "width": 1,
-          "height": 1,
-          "length": 2,
-          "items": [
-            {
-              "name": "Sample Product",
-              "quantity": 3,
-              "sku": "PRO123",
-              "country_of_origin": "GB",
-              "harmonisation_code": "71131900",
-              "weight": 3,
-              "value": 2
-            }
-          ]
-        }
-      ],
-      "invoice": {
-        "incoterm": ""
-      },
-      "delivery_instructions": "Leave in the garden shed",
-      "currency": "EUR",
-      "options": {
-        "package_type": null
-      },
-      "shipping_method": "",
-      "consignment_number": "000000000008108317",
-      "order_value": null,
-      "tracking_url": "",
-      "service": "Generic International Service",
-      "carrier": "Generic Carrier",
-      "rules_package_type": "",
-      "shipping_date": null,
-      "custom_field_1": "CUSTOM1",
-      "custom_field_2": "CUSTOM2",
-      "export_customs": {}
-    }
-  ]
-}
+This group of API calls allow you to interact with your consignments in Scurri. You can list and search through them, create new ones, get their status and print the necessary documentation - labels and customs invoices (CN22/CN23) - when needed.
 
 ### Create a New Consignment [POST]
 
-You can use this API call to create one or more new consignments. In
-both cases, you have to specify a list in the body.
+You can use this API call to create new consignments singly or in bulk. In both cases, you have to specify a list in the body.
 
-Scurri will do its best to store the data in the database and return a
-successful message, instead of validating the data against a carrier.
-That is, the validation process with a carrier is a step performed
-after a consignment has been created successfully.  The reason is that
-this way Scurri can decouple importing consignment data from allocating
-it to a specific carrier, each of which has different requirements.
+Upon import, Scurri will do basic data validation in order to create the consignment. Once created, Scurri will return a successful response  with the identifier. Assigning a consignment to a specific carrier/service is a separate step done after the creation of the consignment. This is done automatically by either the rules or the values you set in the API call.
 
-What this means in practice is that a success response for this API
-call does not mean that the consignment has been allocated to a
-carrier and service successfully.
+In the case of batch creating consignments, Scurri will run any allocation processes asynchronously so a label will not be available straight away.
+If your request contains data only for a single consignment then the allocation happens synchronously.
 
-Additionally, most users will want their configured rules to
-allocate a consignment to a carrier and service. These users should
-leave the carrier-related fields empty. If any of those are specified
-in the request, then they will override the allocation made by rules.
+Weights can be set per item and for the overall consignment. This allows you to include the weight of the packaging.
+To do this, you must specify the weight at the package level and at the item level. The first example below shows how to do this.
 
-Rules are always executed against your consignment data during the
-allocation phase.
+### Create a New Consignment - Standard example [POST]
 
-Another thing to keep in mind is that, in the case of batch creating
-consignments, Scurri will run any allocation processes
-asynchronously. As a result, a label will not be available straight
-away. If your request contains data only for a single consignment then
-the allocation happens synchronously.
-
-If you need a way to associate your internal packages with Scurri packages,
-please use the key `reference` that is available for each `package`.
-
-The `reference` don't need to be unique per company or per item.
-
-Finally, some carriers support enhancements and carrier-specific options which
-must be specified in the "options" field, in example: Signed Consignments
-("signed") or Package Type ("package_type").
-
-You can take a look at the
-[GET consignment](#reference/consignments/consignments/get-a-single-consignment)
-for the payload of this request.
+This is an example of how to format an order with multiple packages and multiple items in a package. This is how a typical consignment in Scurri is submitted via the API.
 
 + Request (application/json)
     + Headers
@@ -1163,57 +245,85 @@ for the payload of this request.
 
     + Body
 
-            [
-              {
-                "carrier": "Generic Carrier",
-                "warehouse_id": "company-slug|Warehouse Name",
-                "service_id": "Generic Carrier|Generic International Service GCINT",
-                "identifier": "8a12630db404424b943e131ce4ee3976",
-                "packages": [
-                  {
-                    "items": [
-                      {
-                        "weight": 1.0,
-                        "value": 25.55,
-                        "fabric_content": "silk",
-                        "harmonisation_code": "5201",
-                        "country_of_origin": "GB",
-                        "sku": "822 JEANS",
-                        "quantity": 1,
-                        "name": "Jeans"
-                      }
-                    ],
-                    "length": 10.0,
-                    "height": 0.5,
-                    "width": 12.2,
-                    "reference": "CustomCustomerReference1"
-                  }
-                ],
-                "recipient": {
-                  "address": {
-                    "country": "IE",
-                    "postcode": "Y35 DW6E",
-                    "city": "Wexford",
-                    "address2": "The Bullring",
-                    "address1": "Innovation House",
-                    "state": "Wexford"
-                  },
-                  "contact_number": "072 8848292234",
-                  "email_address": "john@scurri.com",
-                  "company_name": "Scurri",
-                  "name": "John Doe"
-                },
-                "order_number": "8384832",
-                "options": {
-                  "package_type": "Parcel",
-                  "signed": "yes"
+          {
+          "order_number":"Test123",
+          "shipping_method":"Standard",
+          "order_value":12.34,
+          "currency":"GBP",
+          "custom_field_1":""
+          "recipient":
+          	{
+          		"contact_number":"0987654321",
+          		"email_address":"test@test.com",
+          		"company_name":"Testy Corp",
+          		"first_name": "Test",
+              "last_name": "Test",
+          		"address":
+          		{
+          			"address1":"4-5 Bonhill Street",
+          			"address2":"",
+          			"address3":"",
+          			"city":"London",
+          			"state":"",
+          			"postcode":"EC2A 4BX",
+          			"country":"United Kingdom"
+          		}
+          	},
+          "packages": [
+          	{
+              "description": "TESTDESC",
+              "reference": null,
+              "tracking_number": null,
+              "width": 0.5,
+              "height": 0.5,
+              "length": 0.5,
+              "weight": 8.5,
+              "items": [
+          			{
+              			"name": "TestProduct",
+                    "quantity": 1,
+                    "sku": "TestSku",
+                    "country_of_origin": "GB",
+                    "harmonisation_code": "",
+                    "weight": 5,
+                    "value": 10
+          			},
+                {
+                    "name": "Test Item 2",
+                    "quantity": 1,
+                    "sku": "TestSku2",
+                    "country_of_origin": "GB",
+                    "harmonisation_code": "",
+                    "weight": 3,
+                    "value": 88
                 }
-              }
+          			]
+          	},
+            {
+            "description": "TestProduct",
+            "reference": "",
+            "tracking_number": null,
+            "width": 1.5,
+            "height": 2.5,
+            "length": 5.5,
+            "weight": 3.2,
+            "items": [
+                {
+                    "name": "TestProduct",
+                    "quantity": 1,
+                    "sku": "TestSku",
+                    "country_of_origin": "GB",
+                    "harmonisation_code": "",
+                    "weight": 3,
+                    "value": 10
+                }
             ]
-
+        }
+          	]
+          }
 + Response 201 (application/json)
 
-    The response has 2 entries: one is a dictionary for errors and one
+    The response is the same as the examples above. It has 2 entries: one is a dictionary for errors and one
     a list of successful imports.
 
     + Body
@@ -1221,9 +331,240 @@ for the payload of this request.
             {
                "errors": {},
                 "success": [
-                    "8a12630db404424b943e131ce4ee3976"
+                    "consignment_identifier"
                 ]
             }
+
+
+This example shows the minimum fields required to create a consignment on Scurri.
+
++ Request (application/json)
+    + Headers
+
+            Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
+
+    + Body
+
+                [
+                {
+                "order_number":"12345qwerty",
+                "recipient":
+                    {
+                      "last_name": "Last",
+                      "address":
+                      {
+                          "address1":"4-5 Bonhill Street",
+                          "city":"London",
+                          "country":"United Kingdom"
+                      }
+                    },
+                "packages": [
+                    {
+                        "items": [
+                            {
+                            "sku":"TestSku",
+                            "country_of_origin":"GB",
+                            "name":"TestProduct",
+                            "quantity": 1
+                            }
+                            ]
+                    }
+                    ]
+                }
+                ]
+
++ Response 201 (application/json)
+
+    The response has 2 entries: one is a dictionary for errors and one
+    a list of successful imports. These successes are listed as the identifiers for each consignment.
+
+    + Body
+
+            {
+               "errors": {},
+                "success": [
+                    "consignment_identifier"
+                ]
+            }
+
+
+### Create a New Consignment - All Parameters example [POST]
+
+In this example, all available parameters (excluding carrier specific parameters) are listed.
+
++ Request (application/json)
+    + Headers
+
+            Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
+
+    + Body
+
+            {   "identifier": "",
+                "order_number": "",
+                "service_id": "",
+                "warehouse_id": "",
+                "shipping_method": "",
+                "order_value": 0.0,
+                "carrier": "",
+                "custom_field_1": "",
+                "custom_field_2": "",
+                "delivery_instructions": "",
+                "currency": "",
+                "invoice": {
+                    "incoterm": ""},
+                "options": {
+                    "package_type": ""},
+                "recipient": {
+                    "name": "",
+                    "first_name": "",
+                    "last_name": "",
+                    "company_name": "",
+                    "email_address": "",
+                    "contact_number": "",
+                    "address": {
+                        "address1": "",
+                        "address2": "",
+                        "address3": "",
+                        "city": "",
+                        "state": "",
+                        "postcode": "",
+                        "country": "",
+                        "store_code": ""},
+                    "tax_identifier": ""},
+                "packages": [{
+                        "description": "",
+                        "reference": "",
+                        "width": 0.0,
+                        "height": 0.0,
+                        "length": 0.0,
+                        "weight": 0.0,
+                        "items": [{
+                                "name": "",
+                                "quantity": 0.0,
+                                "sku": "",
+                                "country_of_origin": "",
+                                "harmonisation_code": "",
+                                "weight": 0.0,
+                                "value": 0.0}
+                        ]}
+                ]}
+
++ Response 201 (application/json)
+
+    The response has 2 entries: one is a dictionary for errors and one
+    a list of successful imports. These successes are listed as the identifiers for each consignment.
+
+    + Body
+
+            {
+               "errors": {},
+                "success": [
+                    "consignment_identifier"
+                ]
+            }
+
+
+#### Shipment Rules
+To set up the Shipment Rules, you must use the Scurri UI. We have a handy guide to help you. You have the option to use these to allocate the consignment upon creation, or you can specify the carrier and service in the POST API call.
+If you are using the rules to allocate consignments, you should not include any of the following parameters:
+
+"service_id"
+"warehouse_id"
+"carrier"
+"options": {
+  Or any of the parameters within options
+
+Conversely, if you want to use the API call to set the carrier and service, you must include those fields and any of the appropriate **Options** for the **service** specified. (You can get the Options or enhancements for a service by using the **List all the carrier services for the logged in user** API call noted above)
+
+You can also have a hybrid setup of using rules to allocate consignments upon creation and also have the option of overriding these by manually setting the Carrier and service via the API call.
+
+**N.B.** The rules will always run regardless of what values are in the API call, so you must set up a condition in all of your rules such as a shipping method or one of the custom fields, and when setting the carrier and service in the API call simply use a value which will not match any of the rules. That way, none of the rules will kick in and the values set in the API call will be set on the consignment.
+
+
+
+## Consignment Documents [/company/{company_slug}/consignment/{consignment_id}/documents/{?documenttype,label_quantity,invoice_quantity}]
+
+### Get the label and the invoice for the consignment [GET]
+
+You will use this API call to get the label(s) which are all 4"x6" and customs invoice(s) which are all A4 (if required) for a specific consignment.
+
+We can also configure your account to return 4"x6" customs invoices. This will allow you to print all documents via one printer.
+
+Keep in mind that a label will be created for each package of the consignment.
+
+There are 3 optional formats to retrieve labels: PDF, PNG, or ZPL. PDF and PNG files are both returned base64-encoded:
+
+PDF returns one base64-encoded PDF file with multiple labels concatenated in a single document (one label/invoice per page).
+We cannot concatenate PNG files together, so when there is more than one file being returned (i.e. two or more labels or a label and customs invoice, etc.) a ZIP file is returned instead that contains all files.
+ZPL files are returned raw, so there is no requirement to decode them.
+
+Customs invoices are always returned as PDF as they are A4, unless your account is configured to return 4"x6" invoices. In this case, both labels and invoices are returned in ZPL format in the Labels list of the response.
+
+For the customs invoices, Scurri will do a check and only return the customs invoices the carrier requires, if they are required for that specific consignment.
+
++ Parameters
+    + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
+    + consignment_id (string) - The identifier of the consignment.
+    + documenttype (enum[string],optional) - The file format of the result. The available values are `application/pdf`, `image/png` and `application/x-zebra-zpl`.
+
+        + Default: `application/pdf`
+        + Members
+            + `application/pdf`
+            + `image/png`
+            + `application/x-zebra-zpl`
+
+    + label_quantity (int,optional) - The number of copies of the label you want.
+        + Default: 1
+    + invoice_quantity (int,optional) - The number of copies for the customs invoice document you want.
+        + Default: 3
+
++ Request
+    + Headers
+
+            Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "invoices": null,
+                "labels": "..."
+            }
+
+    + Schema
+
+            {
+              "properties": {
+                "labels": {
+                  "description": "Base64-encoded string containing raw label bytes.",
+                  "type": "string",
+                  "required": true
+                },
+                "invoices": {
+                  "description": "Base64-encoded string containing raw invoice bytes.",
+                  "type": "string",
+                  "required": false
+                }
+              },
+              "description": "contains consignment documents data"
+            }
+
++ Response 400 (application/json)
+
+    This response indicates that there has been a problem with
+    generating the documents. You should check the status of the
+    consignment instead.
+
+    + Body
+
+
++ Response 408 (application/json)
+
+    This response indicates that there was a timeout, when Scurri tried to
+    contact a carrier's servers. You should re-try fetching the documents.
+
+    + Body
 
 ## Consignments [/company/{company_slug}/consignment/{consignment_id}/]
 
@@ -1231,14 +572,11 @@ for the payload of this request.
     + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
     + consignment_id (string) - The consignment identifier for the consignment
 
-
 #### Get a single consignment [GET]
 
-You can use this API call to get all details for the specified
-consignment.
+You can use this API call to get all details for the specified consignment.
 
-For instance, this is how you can query the status of a consignment
-and get any error messages from the allocation phase.
+You can use this call to query the current status of a consignment if a GET Labels call has failed, or to query the tracking information of a consignment after the label has been printed.
 
 + Request (application/json)
     + Headers
@@ -1787,13 +1125,132 @@ and get any error messages from the allocation phase.
 
     + Body
 
+
+### Get the list of created consignments [GET /company/{company_slug}/consignments/{?offset,limit,identifier,status}]
+
+You can get use this API call to retrieve a list of consignments in
+Scurri.
+
+Pagination is provided via the `offset` and `limit` parameters.
+
+For the `offset`, we don't use an integer value but instead use the last `identifier` of the current batch. The `next` value returned with the response body contains a URL you can use to retrieve the next batch.
+
+This means that in your first call, the offset value will be empty, and you can set the number of results returned by using the `limit` parameter. Then use the `next` value from the responses to call the subsequent results in the list.
+
+You can also use this API call to search for consignments using specific criteria, either for a specific `identifier` or for consignments of a specific `status`.
+
+The examples below show a request for consignments that are at a status of Printed, with a limit of 10 results per response.
+
+Example initial request URL: `https://sandbox.scurri.co.uk/api/v1/company/company_slug/consignments/?limit=10&offset=''&status=Printed`
+
+Example offset URL: `https://sandbox.scurri.co.uk/api/v1/company/company_slug/consignments/?limit=10&offset=42eb507662744208a6f6fc3bfa48dd75&status=Printed`
+
+The `Despatched`, `Delivered` and `Exception` statuses are only available if Tracking has been enabled on your account.
+
++ Parameters
+    + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
+    + offset (string,optional) - The offset for any pagination. This is the string identifier of the last consignment entry in the current batch.
+        + Default: ''
+    + limit (int,optional) - How many results to return for a request.
+        + Default: 10
+    + identifier: `myidentifier` (string,optional) - Search for the consignment with the given identifier.
+    + status: `Allocated` (enum[string],optional) - Search for consignments with a specific status.
+        + Members
+             + `Unallocated`
+             + `Allocated`
+             + `Printed`
+             + `Manifested`
+             + `Despatched`
+             + `Delivered`
+             + `Exception`
+             + `Cancelled`
+
+
++ Request
+    + Headers
+
+                Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
+
++ Response 200 (application/json)
+
+            {
+                "count": 1,
+                "next": null,
+                "results": [
+                    {
+                        "carrier": "Generic Carrier",
+                        "consignment_number": null,
+                        "create_date": "2016-03-28T11:53:31+0000",
+                        "currency": "GBP",
+                        "current_status": {
+                            "rejection_reason": null,
+                            "short_form": "Allocated",
+                            "status": "Carrier and service allocated"
+                        },
+                        "delivery_instructions": "",
+                        "identifier": "8a12630db404424b943e131ce4ee3976",
+                        "invoice": {
+                            "incoterm": ""
+                        },
+                        "options": {
+                            "package_type": null
+                        },
+                        "order_number": "8384832",
+                        "order_value": null,
+                        "packages": [
+                            {
+                                "description": "Jeans",
+                                "reference": "CustomerPackageReference1",
+                                "height": 0.5,
+                                "items": [
+                                    {
+                                        "country_of_origin": "GB",
+                                        "harmonisation_code": "5201",
+                                        "name": "Jeans",
+                                        "quantity": 1,
+                                        "sku": "822 JEANS",
+                                        "value": 25.55,
+                                        "weight": 1.0
+                                    }
+                                ],
+                                "length": 10.0,
+                                "tracking_number": null,
+                                "width": 12.2
+                            }
+                        ],
+                        "recipient": {
+                            "address": {
+                                "address1": "Innovation House",
+                                "address2": "The Bullring",
+                                "address3": "",
+                                "city": "Wexford",
+                                "country": "IE",
+                                "postcode": "Y35 DW6E",
+                                "state": "Wexford",
+                                "store_code": ""
+                            },
+                            "company_name": "Scurri",
+                            "contact_number": "072 8848292234",
+                            "email_address": "john@scurri.com",
+                            "first_name": "",
+                            "last_name": "John Doe",
+                            "name": "John Doe"
+                        },
+                        "rules_package_type": "Shipment 44147 : None",
+                        "service": "Generic International Service",
+                        "service_id": "Generic Carrier|Generic International Service GCINT",
+                        "shipping_method": "",
+                        "tracking_url": "",
+                        "warehouse_id": "api-test-company|Test Warehouse"
+                    }
+                ]
+            }
+
 #### Update the specified consignment [PUT]
 
-You can use this API call to update the details of the specified
-consignment.
+You can use this API call to update the details of the specified consignment. This can only be done singly. You cannot bulk edit consignments.
 
-The API does not support partial updates, so you have to specify all
-values, when using this API call.
+The API does not support partial updates, so you have to specify all values when using this API call.
 
 + Request (application/json)
     + Headers
@@ -1955,127 +1412,19 @@ when necessary, the carrier to void the generated labels.
     + Body
 
 
-
-## Consignment Documents [/company/{company_slug}/consignment/{consignment_id}/documents/{?documenttype,label_quantity,invoice_quantity}]
-
-### Get the label and the invoice for the consignment [GET]
-
-You can use this API call to get the label and any customs invoice
-documents required for a specific consignment, if required.
-
-Keep in mind that a label will be created for each package of the
-consignment.
-
-The resulting documents are base64-encoded and they can be either in
-PDF format or in PNG. In the former case, there is one PDF returned
-with multiple labels concatenated in a single document (one label per
-page). In the latter case, we cannot concatenate PNG files together,
-so a ZIP file is returned instead that contains all files.
-
-About the customs invoice documents, Scurri will return the documents
-the carrier requires, only if the carrier does require them for the
-specific consignment.
-
-Another thing to note about customs invoice documents is that they can
-be either in a 6"x4" size (for thermal printer) or in an A4 size (for
-a document printer). Your account can be configured, so that 6"x4"
-thermal invoices can be concatenated with the respective label. This
-makes it easier to send each file to the correct printer.
-
-Note that setting documenttype to `application/x-zebra-zpl`
-is only impacting labels, not invoices -
-they remain PDF as they are A/4.
-
-ZPL Supported Carriers: An Post, Colissimo, Deutsche Post, DPD,
-DPD Germany, DPD Ireland, DX, Fastway, Generic Carrier, Hermes,
-Interlink, ITD Carrier, P2P Trakpak, ParcelForce, PostNL,
-Royal Mail, Spring Global, TNT, Tuffnells, UKMail, Yodel
-
-+ Parameters
-    + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
-    + consignment_id (string) - The identifier of the consignment.
-    + documenttype (enum[string],optional) - The file format of the result. The available values are `application/pdf`, `image/png` and `application/x-zebra-zpl`.
-
-        + Default: `application/pdf`
-        + Members
-            + `application/pdf`
-            + `image/png`
-            + `application/x-zebra-zpl`
-
-    + label_quantity (int,optional) - The number of copies of the label you want.
-        + Default: 1
-    + invoice_quantity (int,optional) - The number of copies for the customs invoice document you want.
-        + Default: 3
-
-+ Request
-    + Headers
-
-            Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
-
-+ Response 200 (application/json)
-
-    + Body
-
-            {
-                "invoices": null,
-                "labels": "..."
-            }
-
-    + Schema
-
-            {
-              "properties": {
-                "labels": {
-                  "description": "Base64-encoded string containing raw label bytes.",
-                  "type": "string",
-                  "required": true
-                },
-                "invoices": {
-                  "description": "Base64-encoded string containing raw invoice bytes.",
-                  "type": "string",
-                  "required": false
-                }
-              },
-              "description": "contains consignment documents data"
-            }
-
-+ Response 400 (application/json)
-
-    This response indicates that there has been a problem with
-    generating the documents. You should check the status of the
-    consignment instead.
-
-    + Body
-
-
-+ Response 408 (application/json)
-
-    This response indicates that there was a timeout, when Scurri tried to
-    contact a carrier's servers. You should re-try fetching the documents.
-
-    + Body
-
-
 # Group Manifests
 
-The manifest process marks a list of consignments as ready to be
-picked up by the carrier.
+The manifest process marks a list of consignments as ready to be picked up by the carrier.
 
-A manifest always refers to a specific warehouse and carrier. Scurri
-abstracts away the necessary actions and documentation a carrier needs
-and presents a common interface for the manifest process.
+A manifest always refers to a specific warehouse and carrier, so it is per pickup that you have. Scurri provides one process for Manifesting regardless of the carrier.
 
 ## Creating Manifests [/company/{company_slug}/manifest/]
 
 ### Create a manifest [POST]
 
-You can use this API call to mark a list of consignments for a
-**specific carrier** and **specific warehouse** as manifested.
+This API call will mark the specified consignments as manifested within Scurri and perform any post-manifest actions, such as generate the necessary documentation for a manifest and send any pre-alert data to the carrier.
 
-This API call will mark the specified consignments as manifested
-within Scurri and perform any post-manifest actions, such as generate
-the necessary documentation for a manifest and send any pre-alert data
-to the carrier.
+You must specify the **Carrier** and the **Warehouse** you wish to manifest for, and provide the list of **Consigment Identifiers** you wish to mark as manifested.
 
 + Parameters
     + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
@@ -2140,16 +1489,11 @@ to the carrier.
 
 ## Manifest Documentation [/company/{company_slug}/manifest/{manifest_id}/documents/]
 
-You can use this API call to get the manifest documentation (as an
-A4-size PDF file) that you need to hand-in to the carrier.
+You will use this API call to get the manifest documentation (as an A4-size PDF file) that you may need to hand to the driver collecting the parcels.
 
-Scurri will return the correct documentation for the specified
-carrier.
+Scurri will return the correct documentation for the specified carrier.
 
-Keep in mind that, because the document generation is kicked off
-asynchronously by the previous API call, the documents may not be
-ready, when you execute this API call. In that case, you should retry
-after a while.
+The document generation process is kicked off asynchronously by the previous API call, so it may take a few seconds before it is ready depending on the carrier.
 
 ### Get the manifest documentation [GET]
 
