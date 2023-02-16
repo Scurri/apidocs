@@ -6,6 +6,10 @@ HOST: https://sandbox.scurri.co.uk/api/v1
 The Scurri Platform API is a RESTful web service that offers import
 and update functionality for consignments, documents and manifests.
 
+Scurri have API’s available for [delivery options at checkout](https://scurrideliveryoptionsapi.docs.apiary.io/#)
+and [delivery locations](https://deliverylocationsapi.docs.apiary.io/#).
+There is a tracking API available for pulling back tracking data, information on this is available on request.
+
 ## HTTP Codes
 
 HTTP codes are used to differentiate between successful and failed
@@ -1156,60 +1160,228 @@ You can take a look at the
 [GET consignment](#reference/consignments/consignments/get-a-single-consignment)
 for the payload of this request.
 
+Max field lengths may be carrier dependant.
+
 + Request (application/json)
+
+    + Attributes
+
+        + identifier: 345334 (string,optional) - The consignment identifier in Scurri - must be unique across all of Scurri. If not provided, Scurri will provide one.
+        + order_number: 7347382 (string) - The order number for the consignment.
+        + create_date: `2019-02-28T10:43:44` (string,optional) - The date the order was placed.
+            Must be in Timestamp format.
+        + carrier: Royal Mail (string,optional) - The carrier this consignment is to be shipped with.
+        + service_id: Royal Mail | Tracked 48 (string,optional) - The service the carrier will use to ship the consignment.
+        + warehouse_id: Company | London Warehouse (string,optional) - The warehouse in Scurri to ship the consignment from.
+        + `shipping_method`: `uk_next_day` (string,optional) - The shipping method to be used in Scurri for the consignment which can be used with the Scurri rules engine.
+           Field length: `255`
+        + shipping_date: `2019-02-28` (string,optional) - The date that the shipment is expected to be dispatched.
+        + order_value: 100.00 (number,optional) - The total order value for the Consignment in Scurri. (If not provided, this will be the sum of item values)
+        + currency: GBP (string,optional) - The currency of the overall value of the consignment and the item’s value within the consignment.
+            + Default: `GBP`
+        + delivery_instructions: Leave in porch (string,optional) - The instructions provided by the consumer for the carrier.
+        + origin_order_reference: `ABC-123` (string,optional) - Reference identifier of the origin system (mandatory for Amazon SFP shipments)
+        + custom_field_1:(enum,optional) - A custom field that takes a string or number to be used in the Scurri rules engine. Field length: `255`
+            + `Custom field for item 1` (string)
+            + 2.99 (number)
+        + custom_field_2:(enum,optional) - A secondary custom field that takes a string or number to be used in the Scurri rules engine. Field length: `255`
+            + `Custom field for item 2` (string)
+            + 2.99 (number)
+        + packages (array)
+            + (object)
+                + description: `Jeans` (string,optional) - Description of the package.
+                    Field length: `255`
+                + reference: `CustomCustomerReference1` (string,optional) - The package reference.
+                    Field length: `255`
+                + width: `12.2` (number,optional) - Width of the package in cm.
+                + height: `0.5` (number,optional) - Height of the package in cm.
+                + length: `10` (number,optional) - Length of the package in cm.
+                + weight: `1` (number,optional) - Weight of the package in kg.
+                    (If not provided, this will be the sum of item weights within the package)
+                + items (array)
+                    + (object)
+                        + name: `Blue Jeans` (string,required) - The item name.
+                            Field length: `255`
+                        + quantity: `822 JEANS` (number,required) - The quantity of the item.
+                        + sku: `Blue Jeans` (string,required) - The items SKU.
+                            Field length: `255`
+                        + country_of_origin: `GB` (string,required) - The country of origin .
+                        + harmonisation_code: `5201` (string,optional) - The items harmonisation code (also known as HS code or commodity code).
+                        + fabric_content: `silk` (string,optional) - The type of fabric used in the item.
+                        + weight: `1` (number,optional) - The weight of the item in kg.
+                        + value: `25.50` (number,optional) - The value of the item.
+                        + taric_condition: `YX55` (string,optional) - The taric code of the item.
+                        + reference: `ABC-123` (string,optional) - Reference identifier of the item (mandatory for Amazon SFP shipments).
+        + recipient
+            + name: `John Doe` (string,optional) - The full name of the recipient.
+                Field length: `255`
+            + first_name: `John` (string,optional) - The recipient's first name.
+                Field length: `255`
+            + last_name: `Doe` (string,optional) - The recipient’s last name.
+                required if company_name or name are not provided.
+                Field length: `255`
+            + company_name: `Scurri Web Services` (string,optional) - The recipients’ company name.
+                required if last_name or name are not provided
+                Field length: `255`
+            + email_address: `johndoe@scurri.com` (string,optional) - The recipient’s email address.
+            + contact_number: `072 8848292234` (string,optional) - The recipient’s phone/contact number.
+                Field length: `40`
+            + tax_identifier: `12345665432` (string,optional) - The recipient’s tax identifier.
+            + eori_number: `GB9876543210000` (string,optional) - The recipient’s EORI number.
+                Field length: `15`
+            + address
+                + address1: `4-5 Bonhill Street` (string,required) - The destination first address line.
+                    Field length: `255`
+                + address2: `Shoreditch` (string,optional) - The destination second address line.
+                    Field length: `100`
+                + address3: `Finsbury` (string,optional) - The destination third address line.
+                    Field length: `100`
+                + city: `London` (string,required) - The destination city.
+                    Field length: `100`
+                + state: `London` (string,optional) - The destination state/county.
+                    Field length: `100`
+                + postcode: `EC2A4BX` (string,optional) - The destination postcode.
+                    Field length: `100`
+                + country: `United Kingdom` (string,required) - The destination country.
+                + store_code: `45` (string,optional) - The store code collection number for pick-up drop-off services.
+                    Field length: `50`
+        + export_customs - Only include field if the value is populated, do not include if the value is null/empty.
+            + reason_for_export: (enum,optional) - The reason for export or purpose of shipment for customs clearance.
+            Must be chosen from the list below:
+                + Default: `merchandise`
+                + `merchandise`
+                + `sample`
+                + `documents`
+                + `gift`
+                + `other`
+                + `returns`
+                + `personal`
+            + shipping_cost: `5.50` (number,optional) - The cost of shipping passed on to your customer.
+            + ioss_number: `IMIRL1234567` (string,optional) - The IOSS number associated with the shipment if applicable.
+                Field length: `12`
+        + options : (object) - required if you are not using Scurri rules to allocate Carrier, Service and Enhancements.
+        + invoice - required if you are not using Scurri rules to allocate Carrier, Service and Enhancements.
+            + incoterm: `DDP` (string,optional) - The trade term associated with the shipment.
+        + custom_attributes - Fields must be enabled by Scurri support.
+            + override_sender_name: `TestCo` (string,optional) - The sender name to appear on the label.
+            + override_sender_eori: `000123123GB` (string,optional) - The EORI that you want to use on the shipment .
+
     + Headers
 
             Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
 
     + Body
-
-            [
-              {
-                "carrier": "Generic Carrier",
-                "warehouse_id": "company-slug|Warehouse Name",
-                "service_id": "Generic Carrier|Generic International Service GCINT",
-                "identifier": "8a12630db404424b943e131ce4ee3976",
-                "packages": [
-                  {
-                    "items": [
-                      {
-                        "weight": 1.0,
-                        "value": 25.55,
-                        "fabric_content": "silk",
-                        "harmonisation_code": "5201",
-                        "country_of_origin": "GB",
-                        "sku": "822 JEANS",
-                        "quantity": 1,
-                        "name": "Jeans"
-                      }
-                    ],
-                    "length": 10.0,
-                    "height": 0.5,
+        {
+            "identifier": "",
+            "order_number": "8384832",
+            "create_date": "2020-02-20T11:48:03+0000",
+            "carrier": "",
+            "service_id": "",
+            "warehouse_id": "",
+            "shipping_method": "shipping_method",
+            "shipping_date": "",
+            "order_value": 10.0,
+            "currency": "",
+            "delivery_instructions": "",
+            "custom_field_1": "",
+            "custom_field_2": "",
+            "packages": [
+                {
+                    "description": "Jeans",
+                    "reference": "CustomCustomerReference1",
                     "width": 12.2,
-                    "reference": "CustomCustomerReference1"
-                  }
-                ],
-                "recipient": {
-                  "address": {
-                    "country": "IE",
-                    "postcode": "Y35 DW6E",
-                    "city": "Wexford",
-                    "address2": "The Bullring",
-                    "address1": "Innovation House",
-                    "state": "Wexford"
-                  },
-                  "contact_number": "072 8848292234",
-                  "email_address": "john@scurri.com",
-                  "company_name": "Scurri",
-                  "name": "John Doe"
+                    "height": 0.5,
+                    "length": 10,
+                    "weight": 1,
+                    "items": [
+                        {
+                            "name": "Jeans",
+                            "quantity": 1,
+                            "sku": "822 JEANS",
+                            "country_of_origin": "GB",
+                            "harmonisation_code": "5201",
+                            "fabric_content": "cotton",
+                            "weight": 1,
+                            "value": 25.55,
+                            "taric_condition": "YX55"
+                        },
+                        {
+                            "name": "Jeans",
+                            "quantity": 1,
+                            "sku": "823 JEANS",
+                            "country_of_origin": "GB",
+                            "harmonisation_code": "5201",
+                            "fabric_content": "cotton",
+                            "weight": 1,
+                            "value": 25.55
+                        }
+                    ]
                 },
-                "order_number": "8384832",
-                "options": {
-                  "package_type": "Parcel",
-                  "signed": "Yes"
+                {
+                    "description": "Jeans",
+                    "reference": "CustomCustomerReference2",
+                    "width": 12.2,
+                    "height": 0.5,
+                    "length": 10,
+                    "weight": 1,
+                    "items": [
+                        {
+                            "name": "Jeans",
+                            "quantity": 1,
+                            "sku": "824 JEANS",
+                            "country_of_origin": "GB",
+                            "harmonisation_code": "5201",
+                            "fabric_content": "cotton",
+                            "weight": 1,
+                            "value": 25.55
+                        },
+                        {
+                            "name": "Jeans",
+                            "quantity": 1,
+                            "sku": "824 JEANS",
+                            "country_of_origin": "GB",
+                            "harmonisation_code": "5201",
+                            "fabric_content": "cotton",
+                            "weight": 1,
+                            "value": 25.55
+                        }
+                    ]
                 }
-              }
-            ]
+            ],
+            "recipient": {
+                "name": "John Doe",
+                "first_name": "",
+                "last_name": "",
+                "company_name": "",
+                "email_address": "johndoe@johndoe.com",
+                "contact_number": "07827904687",
+                "tax_identifier": "123456",
+                "eori_number": "GB123456789123",
+                "address": {
+                    "address1": "77  Crown Street",
+                    "address2": "",
+                    "address3": "",
+                    "city": "London",
+                    "state": "",
+                    "postcode": "SW1H 8ZW",
+                    "country": "GB",
+                    "store_code": ""
+                }
+            },
+            "export_customs": {
+                "reason_for_export": "merchandise",
+                "shipping_cost": "10.00",
+                "ioss_number": "IMIRL1234567"
+            },
+            "custom_attributes": {
+                "override_sender_name": "TestCo",
+                "override_sender_eori": "0000123123GB"
+            },
+            "options": {},
+            "invoice": {
+                "incoterm": ""
+            }
+        }
 
 + Response 201 (application/json)
 
@@ -1218,12 +1390,27 @@ for the payload of this request.
 
     + Body
 
-            {
-               "errors": {},
-                "success": [
-                    "8a12630db404424b943e131ce4ee3976"
+        {
+            "errors": {},
+            "success": [
+                "8a12630db404424b943e131ce4ee3976"
+            ]
+        }
+
++ Response 400 (application/json)
+
+    Error example where SKU is a mandatory field and not provided.
+
+    + Body
+
+        {
+            "errors": {
+                "0": [
+                    "packages: items: sku: This field is required."
                 ]
-            }
+            },
+            "success": []
+        }
 
 ## Consignments [/company/{company_slug}/consignment/{consignment_id}/]
 
