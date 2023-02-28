@@ -1240,6 +1240,10 @@ consignment.
 For instance, this is how you can query the status of a consignment
 and get any error messages from the allocation phase.
 
+`status` indicates the status of a consignment e.g. `Printed - ready to manifest`.\
+`short_form` provides a shortened version of `status` e.g `Printed`.\
+`rejection_reason` only applies where the shipment status is `Unallocated`.
+
 + Request (application/json)
     + Headers
 
@@ -1317,6 +1321,62 @@ and get any error messages from the allocation phase.
                 "tracking_url": "",
                 "warehouse_id": "company-slug|Warehouse Name"
             }
+
++ Response 200 (application/json)
+
+    Example response with an unallocated consignment.
+
+    + Body
+
+        {
+            "identifier": "e0156b67b4f64000b7f02a10b712c7ed",
+            "order_number": "220804-001",
+            "create_date": "2022-08-04T15:21:12+0000",
+            "service_id": "Generic Carrier|Generic Domestic Service GDOM",
+            "warehouse_id": "generic-account|Generic WH IE",
+            "current_status": {
+                "short_form": "Unallocated",
+                "status": "Label not available",
+                "rejection_reason": "Division required for country IE"
+            },
+            "recipient": {
+                "name": "",
+                "first_name": "John",
+                "last_name": "Doe",
+                "company_name": "",
+                "email_address": "test@anon.com",
+                "contact_number": "12345678",
+                "address": {
+                    "address1": "Common Quay St",
+                    "address2": "Ferrybank South",
+                    "address3": "",
+                    "city": "Wexford",
+                    "state": "",
+                    "postcode": "Y35 EK88",
+                    "country": "IE",
+                    "store_code": ""
+                }
+            }
+        }
+
++ Response 200 (application/json)
+
+    Example response with consignment ready to ship.
+
+    + Body
+
+        {
+            "identifier": "a424b7303da74c85997fffcd2f95d716",
+            "order_number": "220520-001",
+            "create_date": "2022-05-20T11:46:43+0000",
+            "service_id": "Generic Carrier|Generic Domestic Service GDOM",
+            "warehouse_id": "generic-account|Generic WH IE",
+            "current_status": {
+                "short_form": "Printed",
+                "status": "Labels printed, shipment ready to manifest.",
+                "rejection_reason": null
+            }
+        }
 
 
     + Schema
