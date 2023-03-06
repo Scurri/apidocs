@@ -1167,7 +1167,7 @@ Max field lengths may be carrier dependant.
     + Attributes
 
         + identifier: 345334 (string,optional) - The consignment identifier in Scurri - must be unique across all of Scurri. If not provided, Scurri will provide one.
-        + order_number: 7347382 (string) - The order number for the consignment.
+        + order_number: 7347382 (string,required) - The order number for the consignment.
         + create_date: `2019-02-28T10:43:44` (string,optional) - The date the order was placed.
             Must be in Timestamp format.
         + carrier: Royal Mail (string,optional) - The carrier this consignment is to be shipped with.
@@ -2034,13 +2034,17 @@ and get any error messages from the allocation phase.
 
     + Body
 
+        {
+            "detail": "Not found."
+        }
+
 #### Update the specified consignment [PUT]
 
-You can use this API call to update the details of the specified
-consignment.
+You can use this API call to update the details of the specified consignment.
 
-The API does not support partial updates, so you have to specify all
-values, when using this API call.
+The API does not support partial updates, you must specify all values when using this API call.
+
+Mandatory and optional fields are detailed under the [Create a New Consignment](#reference/consignments/consignments-collection/create-a-new-consignment) call.
 
 + Request (application/json)
     + Headers
@@ -2177,6 +2181,10 @@ values, when using this API call.
 
     + Body
 
+        {
+            "detail": "packages: items: quantity: This field is required."
+        }
+
 ### Cancel a single consignment [DELETE]
 
 You can use this API call to cancel a consignment. Scurri will notify,
@@ -2187,20 +2195,23 @@ when necessary, the carrier to void the generated labels.
 
             Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
 
-+ Response 204 (application/json)
++ Response 204
 
     This response indicates that the consignment was cancelled
     successfully.
 
     + Body
 
-+ Response 400
++ Response 400 (application/json)
 
     This response indications that there was an error cancelling the
     specified consignment.
 
     + Body
 
+        {
+            "detail": "Cannot cancel shipment with status of \"Cancelled at 2022-02-02 09:00:00.000000+00:00\""
+        }
 
 
 ## Consignment Documents [/company/{company_slug}/consignment/{consignment_id}/documents/{?documenttype,label_quantity,invoice_quantity}]
@@ -2213,14 +2224,17 @@ documents required for a specific consignment, if required.
 Keep in mind that a label will be created for each package of the
 consignment.
 
-The resulting documents are base64-encoded and they can be either in
-PDF format or in PNG. In the former case, there is one PDF returned
-with multiple labels concatenated in a single document (one label per
-page). In the latter case, we cannot concatenate PNG files together,
-so a ZIP file is returned instead that contains all files.
-ZPL labels can be configured as 230 or 300 DPI resolution.
-It's also possible to specify the required label resolution per request.
-To enable this feature, contact Scurri support.
+#### Available label formats
+
+The resulting documents are base64-encoded and they can be provided in the following formats:
+- PDF: One PDF returned with multiple labels concatenated in a single document (one label per page)
+- PNG: A ZIP file is returned containing all files
+- X-png-list: Single file PNGs (non-zipped)
+- ZPL: Can be configured as 230 or 300 DPI resolution. It's also possible to specify the required label resolution or compress the label in the request.
+
+Alternative label formats are also available, for example 8"x4". To enable this feature on your account, contact Scurri support. Once enabled the label customisation parameter can be used.
+
+#### Customs Invoice Documents
 
 About the customs invoice documents, Scurri will return the documents
 the carrier requires, only if the carrier does require them for the
@@ -2232,14 +2246,21 @@ a document printer). Your account can be configured, so that 6"x4"
 thermal invoices can be concatenated with the respective label. This
 makes it easier to send each file to the correct printer.
 
-Note that setting documenttype to `application/x-zebra-zpl`
-is only impacting labels, not invoices -
-they remain PDF as they are A/4.
+Note that setting documenttype to `application/x-zebra-zpl` only impacts labels, not invoices - they remain PDF as they are A4.
 
-ZPL Supported Carriers: An Post, Colissimo, Deutsche Post, DPD,
-DPD Germany, DPD Ireland, DX, Fastway, Generic Carrier, Hermes,
-Interlink, ITD Carrier, P2P Trakpak, ParcelForce, PostNL,
-Royal Mail, Spring Global, TNT, Tuffnells, UKMail, Yodel
+#### ZPL Supported Carriers
+
+
+|||||
+|:---:|:---:|:---:|:---:|
+| An Post | Colissimo | Deutsche Post | DPD |
+| DPD Germany | DPD Ireland | DX | Fastway |
+| Generic Carrier | Hermes | Interlink | ITD Carrier |
+| P2P Trakpak | ParcelForce | PostNL | Royal Mail |
+| Spring Global | TNT | Tuffnells | UKMail |
+| Yodel |  |  |  |
+|||||
+
 
 + Parameters
     + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
@@ -2299,6 +2320,9 @@ Royal Mail, Spring Global, TNT, Tuffnells, UKMail, Yodel
 
     + Body
 
+        {
+            "detail": "Consignment not ready for printing."
+        }
 
 + Response 408 (application/json)
 
@@ -2390,6 +2414,10 @@ to the carrier.
 
     + Body
 
+        {
+            "detail": "carrier_id: This field is required."
+        }
+
 ## Manifest Documentation [/company/{company_slug}/manifest/{manifest_id}/documents/]
 
 You can use this API call to get the manifest documentation (as an
@@ -2435,6 +2463,10 @@ after a while.
     This response indicates that there was something wrong with the request.
 
     + Body
+
+        {
+            "detail": "consignment_ids: Consignment(s) not ready for manifesting"
+        }
 
 + Response 409 (application/json)
 
