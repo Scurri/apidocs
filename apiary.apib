@@ -308,6 +308,7 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
                         "carrier": "Generic Carrier",
                         "consignment_number": null,
                         "create_date": "2016-03-28T11:53:31+0000",
+                        "expected_delivery_date": null,
                         "currency": "GBP",
                         "current_status": {
                             "rejection_reason": null,
@@ -418,6 +419,7 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "identifier": "TEST3019",
       "order_number": "TEST3019",
       "create_date": "2017-05-24T12:03:12+0000",
+      "expected_delivery_date": "2017-05-28",
       "service_id": "Generic Carrier|Generic International Service GCINT",
       "warehouse_id": "scurri-live-test|TechHub @Campus",
       "current_status": {
@@ -488,6 +490,7 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "identifier": "TEST3027",
       "order_number": "TEST3027",
       "create_date": "2017-05-24T12:03:45+0000",
+      "expected_delivery_date": "2017-05-28",
       "service_id": "Generic Carrier|Generic International Service GCINT",
       "warehouse_id": "scurri-live-test|TechHub @Campus",
       "current_status": {
@@ -558,6 +561,7 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "identifier": "TEST334",
       "order_number": "TEST334",
       "create_date": "2017-05-24T12:03:43+0000",
+      "expected_delivery_date": "2017-05-28",
       "service_id": "Generic Carrier|Generic International Service GCINT",
       "warehouse_id": "scurri-live-test|TechHub @Campus",
       "current_status": {
@@ -628,6 +632,7 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "identifier": "TEST3618",
       "order_number": "TEST3618",
       "create_date": "2017-05-24T12:03:44+0000",
+      "expected_delivery_date": "2017-05-28",
       "service_id": "Generic Carrier|Generic International Service GCINT",
       "warehouse_id": "scurri-live-test|TechHub @Campus",
       "current_status": {
@@ -698,6 +703,7 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "identifier": "TEST3939",
       "order_number": "TEST3939",
       "create_date": "2017-05-24T12:03:48+0000",
+      "expected_delivery_date": "2017-05-28",
       "service_id": "Generic Carrier|Generic International Service GCINT",
       "warehouse_id": "scurri-live-test|TechHub @Campus",
       "current_status": {
@@ -768,6 +774,7 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "identifier": "TEST4441",
       "order_number": "TEST4441",
       "create_date": "2017-05-24T12:03:47+0000",
+      "expected_delivery_date": "2017-05-28",
       "service_id": "Generic Carrier|Generic International Service GCINT",
       "warehouse_id": "scurri-live-test|TechHub @Campus",
       "current_status": {
@@ -838,6 +845,7 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "identifier": "TEST4746",
       "order_number": "TEST4746",
       "create_date": "2017-05-24T12:03:52+0000",
+      "expected_delivery_date": "2017-05-28",
       "service_id": "Generic Carrier|Generic International Service GCINT",
       "warehouse_id": "scurri-live-test|TechHub @Campus",
       "current_status": {
@@ -908,6 +916,7 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "identifier": "TEST5021",
       "order_number": "TEST5021",
       "create_date": "2017-05-24T12:03:41+0000",
+      "expected_delivery_date": "2017-05-28",
       "service_id": "Generic Carrier|Generic International Service GCINT",
       "warehouse_id": "scurri-live-test|TechHub @Campus",
       "current_status": {
@@ -978,6 +987,7 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "identifier": "TEST5146",
       "order_number": "TEST5146",
       "create_date": "2017-05-24T12:03:36+0000",
+      "expected_delivery_date": "2017-05-28",
       "service_id": "Generic Carrier|Generic International Service GCINT",
       "warehouse_id": "scurri-live-test|TechHub @Campus",
       "current_status": {
@@ -1048,6 +1058,7 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "identifier": "TEST5838",
       "order_number": "TEST5838",
       "create_date": "2017-05-24T12:03:32+0000",
+      "expected_delivery_date": "2017-05-28",
       "service_id": "Generic Carrier|Generic International Service GCINT",
       "warehouse_id": "scurri-live-test|TechHub @Campus",
       "current_status": {
@@ -1170,6 +1181,7 @@ Max field lengths may be carrier dependant.
         + order_number: 7347382 (string,required) - The order number for the consignment.
         + create_date: `2019-02-28T10:43:44` (string,optional) - The date the order was placed.
             Must be in Timestamp format.
+        + expected_delivery_date: `2019-03-10` (string,optional) - The promise delivery date for a shipment. Must be in Timestamp format (date).
         + carrier: Royal Mail (string,optional) - The carrier this consignment is to be shipped with.
         + service_id: Royal Mail | Tracked 48 (string,optional) - The service the carrier will use to ship the consignment.
         + warehouse_id: Company | London Warehouse (string,optional) - The warehouse in Scurri to ship the consignment from.
@@ -1275,6 +1287,7 @@ Max field lengths may be carrier dependant.
             "identifier": "",
             "order_number": "8384832",
             "create_date": "2020-02-20T11:48:03+0000",
+            "expected_delivery_date": "2020-02-28",
             "carrier": "",
             "service_id": "",
             "warehouse_id": "",
@@ -1446,6 +1459,7 @@ and get any error messages from the allocation phase.
                 "carrier": "Generic Carrier",
                 "consignment_number": null,
                 "create_date": "2016-03-28T11:53:31+0000",
+                "expected_delivery_date": null,
                 "currency": "GBP",
                 "current_status": {
                     "rejection_reason": null,
@@ -1519,6 +1533,7 @@ and get any error messages from the allocation phase.
             "identifier": "e0156b67b4f64000b7f02a10b712c7ed",
             "order_number": "220804-001",
             "create_date": "2022-08-04T15:21:12+0000",
+            "expected_delivery_date": null,
             "service_id": "Generic Carrier|Generic Domestic Service GDOM",
             "warehouse_id": "generic-account|Generic WH IE",
             "current_status": {
@@ -1556,6 +1571,7 @@ and get any error messages from the allocation phase.
             "identifier": "a424b7303da74c85997fffcd2f95d716",
             "order_number": "220520-001",
             "create_date": "2022-05-20T11:46:43+0000",
+            "expected_delivery_date": null,
             "service_id": "Generic Carrier|Generic Domestic Service GDOM",
             "warehouse_id": "generic-account|Generic WH IE",
             "current_status": {
@@ -1894,6 +1910,12 @@ and get any error messages from the allocation phase.
                   "required": false,
                   "defaultValue": null
                 },
+                "expected_delivery_date": {
+                  "description": "Optional ISO 8601 date the consignment was promised to be delivered. If not specified, defaults to null.",
+                  "type": "string",
+                  "required": false,
+                  "defaultValue": null
+                },
                 "shipping_date": {
                   "description": "Optional ISO 8601 date/time the shipping will take place. If not specified, defaults to date of printing. If timezone offset not specified, defaults to UTC offset",
                   "type": "string",
@@ -2110,6 +2132,7 @@ Mandatory and optional fields are detailed under the [Create a New Consignment](
                 "carrier": "Generic Carrier",
                 "consignment_number": null,
                 "create_date": "2016-03-28T12:57:05+0000",
+                "expected_delivery_date": null,
                 "currency": "GBP",
                 "current_status": {
                     "rejection_reason": null,
