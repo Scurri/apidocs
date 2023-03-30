@@ -1215,9 +1215,9 @@ Max field lengths may be carrier dependant.
                         + name: `Blue Jeans` (string,required) - The item name.
                             Field length: `255`
                         + quantity: `822 JEANS` (number,required) - The quantity of the item.
-                        + sku: `Blue Jeans` (string,required) - The items SKU.
+                        + sku: `Blue Jeans` (string,optional) - The items SKU.
                             Field length: `255`
-                        + country_of_origin: `GB` (string,required) - The country of origin .
+                        + country_of_origin: `GB` (string,optional) - The country of origin.
                         + harmonisation_code: `5201` (string,optional) - The items harmonisation code (also known as HS code or commodity code).
                         + fabric_content: `silk` (string,optional) - The type of fabric used in the item.
                         + weight: `1` (number,optional) - The weight of the item in kg.
@@ -1412,14 +1412,14 @@ Max field lengths may be carrier dependant.
 
 + Response 400 (application/json)
 
-    Error example where SKU is a mandatory field and not provided.
+    Error example where quantity is a mandatory field and not provided.
 
     + Body
 
         {
             "errors": {
                 "0": [
-                    "packages: items: sku: This field is required."
+                    "packages: items: quantity: This field is required."
                 ]
             },
             "success": []
