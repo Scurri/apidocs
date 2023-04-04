@@ -151,7 +151,7 @@ specified.
 ## List all the carrier services for the logged in user [GET]
 This is an example of the Carrier Services call with the response.
 
-The test URL was `https://api.scurri.co.uk/v1/company/scurri-live-test/carrierservices`.
+Test URL: `https://sandbox.scurri.co.uk/api/v1/company/scurri-live-test/carrierservices`
 
 + Parameters
     + company_slug: `api-test-company` (string) - The slug of your company in Scurri.
@@ -182,7 +182,7 @@ The test URL was `https://api.scurri.co.uk/v1/company/scurri-live-test/carrierse
 ## Example of carrier services for the logged in user with options[GET /company/{company_slug}/carrierservices{?enhancements,package_types}]
 This is an example of the Carrier Services call with the response including Enhancements and Package Types.
 
-The test URL was `https://api.scurri.co.uk/v1/company/scurri-live-test/carrierservices?enhancements=true&package_types=true`.
+Test URL: `https://sandbox.scurri.co.uk/api/v1/company/scurri-live-test/carrierservices?enhancements=true&package_types=true`
 
 The available Enhancements and Package Types will be returned in the response
 
@@ -266,11 +266,13 @@ For the `offset`, we don't use an integer value but instead use the last
 `identifier` of the current batch. The `next` value returned with the
 response body contains a URL you can use to retrieve the next batch.
 
-Example offset URL: `https://api.scurri.co.uk/v1/company/test-company/consignments/?offset=000ed1bfb93c43319ec79247f50dfd3c`
+Example offset URL: `https://sandbox.scurri.co.uk/api/v1/company/test-company/consignments/?offset=000ed1bfb93c43319ec79247f50dfd3c`
 
 You can also use this API call to search for consignments using
 specific criteria, either for a specific `identifier` or for
 consignments of a specific `status`.
+This API cannot be used to search for multiple consignments by their identifiers,
+you may only search for a single consignment by identifier.
 
 The `Despatched`, `Delivered` and `Exception` statuses are only available if Tracking has been enabled on your account.
 
@@ -378,7 +380,7 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
 
 This is an example `offset` with the response.
 
-The test URL was `https://api.scurri.co.uk/v1/company/scurri-live-test/consignments/?offset=TEST2893&status=Printed`.
+Test URL: `https://sandbox.scurri.co.uk/api/v1/company/scurri-live-test/consignments/?offset=TEST2893&status=Printed`
 
 As you can see, in the `next` field, it returns the link to next batch.
 The next returns `null` if it's the last batch.
@@ -413,7 +415,7 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
 
 {
   "count": 23,
-  "next": "https://api.scurri.co.uk/v1/company/scurri-live-test/consignments/?offset=TEST5838&status=Printed",
+  "next": "https://sandbox.scurri.co.uk/api/v1/company/scurri-live-test/consignments/?offset=TEST5838&status=Printed",
   "results": [
     {
       "identifier": "TEST3019",
