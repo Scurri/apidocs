@@ -1279,6 +1279,15 @@ Max field lengths may be carrier dependant.
         + custom_attributes - Fields must be enabled by Scurri support.
             + override_sender_name: `TestCo` (string,optional) - The sender name to appear on the label.
             + override_sender_eori: `000123123GB` (string,optional) - The EORI that you want to use on the shipment .
+            + override_sender_address1: `71 Test Street` (string,required) - First address line. Override sender address needs to be enabled by Scurri support.
+            + override_sender_address2: `Test address 2 line` (string,optional) - Second address line.
+            + override_sender_address3: `Test address 3 line` (string,optional) - Third address line.
+            + override_sender_city: `Leeds` (string,required) - The city name of the sender.
+            + override_sender_state: `West Yorkshire` (string,optional) - State/county of the sender.
+            + override_sender_postcode: `BD1 1AA` (string,required) - Postcode of the sender.
+            + override_sender_country: `GB` (string,required) - The country code of the sender. Use ISO codes here.
+            + override_sender_email: `test@example.com` (string,optional) - The email address of the sender. If not provided the Warehouse/Company value will be used.
+            + override_sender_phone: `+44 7975 777 666` (string,optional) - The phone number of the sender. If not provided the Warehouse/Company value will be used.
 
     + Headers
 
@@ -1390,7 +1399,16 @@ Max field lengths may be carrier dependant.
             },
             "custom_attributes": {
                 "override_sender_name": "TestCo",
-                "override_sender_eori": "0000123123GB"
+                "override_sender_eori": "0000123123GB",
+                "override_sender_address1": "71 Test Street",
+                "override_sender_address2": "Test address 2 line",
+                "override_sender_address3": "Test address 3 line",
+                "override_sender_city": "Leeds",
+                "override_sender_state": "West Yorkshire",
+                "override_sender_postcode": "BD1 1AA",
+                "override_sender_country": "GB",
+                "override_sender_email": "test@example.com",
+                "override_sender_phone": "+44 7975 777 666"
             },
             "options": {},
             "invoice": {
