@@ -1294,127 +1294,129 @@ Max field lengths may be carrier dependant.
             Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==
 
     + Body
-        {
-            "identifier": "",
-            "order_number": "8384832",
-            "create_date": "2020-02-20T11:48:03+0000",
-            "expected_delivery_date": "2020-02-28",
-            "carrier": "",
-            "service_id": "",
-            "warehouse_id": "",
-            "shipping_method": "shipping_method",
-            "shipping_date": "",
-            "order_value": 10.0,
-            "currency": "",
-            "delivery_instructions": "",
-            "custom_field_1": "",
-            "custom_field_2": "",
-            "packages": [
-                {
-                    "description": "Jeans",
-                    "reference": "CustomCustomerReference1",
-                    "width": 12.2,
-                    "height": 0.5,
-                    "length": 10,
-                    "weight": 1,
-                    "items": [
-                        {
-                            "name": "Jeans",
-                            "quantity": 1,
-                            "sku": "822 JEANS",
-                            "country_of_origin": "GB",
-                            "harmonisation_code": "5201",
-                            "fabric_content": "cotton",
-                            "weight": 1,
-                            "value": 25.55,
-                            "taric_condition": "YX55"
-                        },
-                        {
-                            "name": "Jeans",
-                            "quantity": 1,
-                            "sku": "823 JEANS",
-                            "country_of_origin": "GB",
-                            "harmonisation_code": "5201",
-                            "fabric_content": "cotton",
-                            "weight": 1,
-                            "value": 25.55
-                        }
-                    ]
+        [
+            {
+                "identifier": "",
+                "order_number": "8384832",
+                "create_date": "2020-02-20T11:48:03+0000",
+                "expected_delivery_date": "2020-02-28",
+                "carrier": "",
+                "service_id": "",
+                "warehouse_id": "",
+                "shipping_method": "shipping_method",
+                "shipping_date": "",
+                "order_value": 10.0,
+                "currency": "",
+                "delivery_instructions": "",
+                "custom_field_1": "",
+                "custom_field_2": "",
+                "packages": [
+                    {
+                        "description": "Jeans",
+                        "reference": "CustomCustomerReference1",
+                        "width": 12.2,
+                        "height": 0.5,
+                        "length": 10,
+                        "weight": 1,
+                        "items": [
+                            {
+                                "name": "Jeans",
+                                "quantity": 1,
+                                "sku": "822 JEANS",
+                                "country_of_origin": "GB",
+                                "harmonisation_code": "5201",
+                                "fabric_content": "cotton",
+                                "weight": 1,
+                                "value": 25.55,
+                                "taric_condition": "YX55"
+                            },
+                            {
+                                "name": "Jeans",
+                                "quantity": 1,
+                                "sku": "823 JEANS",
+                                "country_of_origin": "GB",
+                                "harmonisation_code": "5201",
+                                "fabric_content": "cotton",
+                                "weight": 1,
+                                "value": 25.55
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Jeans",
+                        "reference": "CustomCustomerReference2",
+                        "width": 12.2,
+                        "height": 0.5,
+                        "length": 10,
+                        "weight": 1,
+                        "items": [
+                            {
+                                "name": "Jeans",
+                                "quantity": 1,
+                                "sku": "824 JEANS",
+                                "country_of_origin": "GB",
+                                "harmonisation_code": "5201",
+                                "fabric_content": "cotton",
+                                "weight": 1,
+                                "value": 25.55
+                            },
+                            {
+                                "name": "Jeans",
+                                "quantity": 1,
+                                "sku": "824 JEANS",
+                                "country_of_origin": "GB",
+                                "harmonisation_code": "5201",
+                                "fabric_content": "cotton",
+                                "weight": 1,
+                                "value": 25.55
+                            }
+                        ]
+                    }
+                ],
+                "recipient": {
+                    "name": "John Doe",
+                    "first_name": "",
+                    "last_name": "",
+                    "company_name": "",
+                    "email_address": "johndoe@johndoe.com",
+                    "contact_number": "07827904687",
+                    "tax_identifier": "123456",
+                    "eori_number": "GB123456789123",
+                    "address": {
+                        "address1": "77  Crown Street",
+                        "address2": "",
+                        "address3": "",
+                        "city": "London",
+                        "state": "",
+                        "postcode": "SW1H 8ZW",
+                        "country": "GB",
+                        "store_code": ""
+                    }
                 },
-                {
-                    "description": "Jeans",
-                    "reference": "CustomCustomerReference2",
-                    "width": 12.2,
-                    "height": 0.5,
-                    "length": 10,
-                    "weight": 1,
-                    "items": [
-                        {
-                            "name": "Jeans",
-                            "quantity": 1,
-                            "sku": "824 JEANS",
-                            "country_of_origin": "GB",
-                            "harmonisation_code": "5201",
-                            "fabric_content": "cotton",
-                            "weight": 1,
-                            "value": 25.55
-                        },
-                        {
-                            "name": "Jeans",
-                            "quantity": 1,
-                            "sku": "824 JEANS",
-                            "country_of_origin": "GB",
-                            "harmonisation_code": "5201",
-                            "fabric_content": "cotton",
-                            "weight": 1,
-                            "value": 25.55
-                        }
-                    ]
+                "export_customs": {
+                    "reason_for_export": "merchandise",
+                    "shipping_cost": "10.00",
+                    "ioss_number": "IMIRL1234567"
+                },
+                "custom_attributes": {
+                    "override_sender_name": "TestCo",
+                    "override_sender_eori": "0000123123GB",
+                    "override_sender_address1": "71 Test Street",
+                    "override_sender_address2": "Test address 2 line",
+                    "override_sender_address3": "Test address 3 line",
+                    "override_sender_city": "Leeds",
+                    "override_sender_state": "West Yorkshire",
+                    "override_sender_postcode": "BD1 1AA",
+                    "override_sender_country": "GB",
+                    "override_sender_email": "test@example.com",
+                    "override_sender_phone": "+44 7975 777 666"
+                },
+                "options": {},
+                "invoice": {
+                    "incoterm": ""
                 }
-            ],
-            "recipient": {
-                "name": "John Doe",
-                "first_name": "",
-                "last_name": "",
-                "company_name": "",
-                "email_address": "johndoe@johndoe.com",
-                "contact_number": "07827904687",
-                "tax_identifier": "123456",
-                "eori_number": "GB123456789123",
-                "address": {
-                    "address1": "77  Crown Street",
-                    "address2": "",
-                    "address3": "",
-                    "city": "London",
-                    "state": "",
-                    "postcode": "SW1H 8ZW",
-                    "country": "GB",
-                    "store_code": ""
-                }
-            },
-            "export_customs": {
-                "reason_for_export": "merchandise",
-                "shipping_cost": "10.00",
-                "ioss_number": "IMIRL1234567"
-            },
-            "custom_attributes": {
-                "override_sender_name": "TestCo",
-                "override_sender_eori": "0000123123GB",
-                "override_sender_address1": "71 Test Street",
-                "override_sender_address2": "Test address 2 line",
-                "override_sender_address3": "Test address 3 line",
-                "override_sender_city": "Leeds",
-                "override_sender_state": "West Yorkshire",
-                "override_sender_postcode": "BD1 1AA",
-                "override_sender_country": "GB",
-                "override_sender_email": "test@example.com",
-                "override_sender_phone": "+44 7975 777 666"
-            },
-            "options": {},
-            "invoice": {
-                "incoterm": ""
             }
-        }
+        ]
 
 + Response 201 (application/json)
 
