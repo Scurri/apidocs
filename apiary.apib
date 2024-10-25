@@ -486,6 +486,9 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "shipping_date": null,
       "custom_field_1": "CUSTOM1",
       "custom_field_2": "CUSTOM2",
+      "custom_field_3": "CUSTOM3",
+      "custom_field_4": "CUSTOM4",
+      "custom_field_5": "CUSTOM5",
       "export_customs": {}
     },
     {
@@ -557,6 +560,9 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "shipping_date": null,
       "custom_field_1": "CUSTOM1",
       "custom_field_2": "CUSTOM2",
+      "custom_field_3": "CUSTOM3",
+      "custom_field_4": "CUSTOM4",
+      "custom_field_5": "CUSTOM5",
       "export_customs": {}
     },
     {
@@ -628,6 +634,9 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "shipping_date": null,
       "custom_field_1": "CUSTOM1",
       "custom_field_2": "CUSTOM2",
+      "custom_field_3": "CUSTOM3",
+      "custom_field_4": "CUSTOM4",
+      "custom_field_5": "CUSTOM5",
       "export_customs": {}
     },
     {
@@ -699,6 +708,9 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "shipping_date": null,
       "custom_field_1": "CUSTOM1",
       "custom_field_2": "CUSTOM2",
+      "custom_field_3": "CUSTOM3",
+      "custom_field_4": "CUSTOM4",
+      "custom_field_5": "CUSTOM5",
       "export_customs": {}
     },
     {
@@ -770,6 +782,9 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "shipping_date": null,
       "custom_field_1": "CUSTOM1",
       "custom_field_2": "CUSTOM2",
+      "custom_field_3": "CUSTOM3",
+      "custom_field_4": "CUSTOM4",
+      "custom_field_5": "CUSTOM5",
       "export_customs": {}
     },
     {
@@ -841,6 +856,9 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "shipping_date": null,
       "custom_field_1": "CUSTOM1",
       "custom_field_2": "CUSTOM2",
+      "custom_field_3": "CUSTOM3",
+      "custom_field_4": "CUSTOM4",
+      "custom_field_5": "CUSTOM5",
       "export_customs": {}
     },
     {
@@ -912,6 +930,9 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "shipping_date": null,
       "custom_field_1": "CUSTOM1",
       "custom_field_2": "CUSTOM2",
+      "custom_field_3": "CUSTOM3",
+      "custom_field_4": "CUSTOM4",
+      "custom_field_5": "CUSTOM5",
       "export_customs": {}
     },
     {
@@ -983,6 +1004,9 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "shipping_date": null,
       "custom_field_1": "CUSTOM1",
       "custom_field_2": "CUSTOM2",
+      "custom_field_3": "CUSTOM3",
+      "custom_field_4": "CUSTOM4",
+      "custom_field_5": "CUSTOM5",
       "export_customs": {}
     },
     {
@@ -1054,6 +1078,9 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "shipping_date": null,
       "custom_field_1": "CUSTOM1",
       "custom_field_2": "CUSTOM2",
+      "custom_field_3": "CUSTOM3",
+      "custom_field_4": "CUSTOM4",
+      "custom_field_5": "CUSTOM5",
       "export_customs": {}
     },
     {
@@ -1125,6 +1152,9 @@ The `Despatched`, `Delivered` and `Exception` statuses are only available if Tra
       "shipping_date": null,
       "custom_field_1": "CUSTOM1",
       "custom_field_2": "CUSTOM2",
+      "custom_field_3": "CUSTOM3",
+      "custom_field_4": "CUSTOM4",
+      "custom_field_5": "CUSTOM5",
       "export_customs": {}
     }
   ]
@@ -1198,8 +1228,17 @@ Max field lengths may be carrier dependant.
         + custom_field_1:(enum,optional) - A custom field that takes a string or number to be used in the Scurri rules engine. Field length: `255`
             + `Custom field for item 1` (string)
             + 2.99 (number)
-        + custom_field_2:(enum,optional) - A secondary custom field that takes a string or number to be used in the Scurri rules engine. Field length: `255`
+        + custom_field_2:(enum,optional) - A second custom field that takes a string or number to be used in the Scurri rules engine. Field length: `255`
             + `Custom field for item 2` (string)
+            + 2.99 (number)
+        + custom_field_3:(enum,optional) - A third custom field that takes a string or number to be used in the Scurri rules engine. It's only available for certain tiers. Contact support for more details. Field length: `255`
+            + `Custom field for item 3` (string)
+            + 2.99 (number)
+        + custom_field_4:(enum,optional) - A fourth custom field that takes a string or number to be used in the Scurri rules engine. It's only available for certain tiers. Contact support for more details. Field length: `255`
+            + `Custom field for item 4` (string)
+            + 2.99 (number)
+        + custom_field_5:(enum,optional) - A fifth custom field that takes a string or number to be used in the Scurri rules engine. It's only available for certain tiers. Contact support for more details. Field length: `255`
+            + `Custom field for item 5` (string)
             + 2.99 (number)
         + packages (array)
             + (object)
@@ -1310,6 +1349,9 @@ Max field lengths may be carrier dependant.
                 "delivery_instructions": "",
                 "custom_field_1": "",
                 "custom_field_2": "",
+                "custom_field_3": "",
+                "custom_field_4": "",
+                "custom_field_5": "",
                 "packages": [
                     {
                         "description": "Jeans",
@@ -1909,6 +1951,30 @@ and get any error messages from the allocation phase.
                   "required": false,
                   "defaultValue": null,
                   "description": "Second custom field"
+                },
+                "custom_field_3": {
+                  "type": "string",
+                  "minimum": null,
+                  "maximum": null,
+                  "required": false,
+                  "defaultValue": null,
+                  "description": "Third custom field"
+                },
+                "custom_field_4": {
+                  "type": "string",
+                  "minimum": null,
+                  "maximum": null,
+                  "required": false,
+                  "defaultValue": null,
+                  "description": "Fourth custom field"
+                },
+                "custom_field_5": {
+                  "type": "string",
+                  "minimum": null,
+                  "maximum": null,
+                  "required": false,
+                  "defaultValue": null,
+                  "description": "Fifth custom field"
                 },
                 "service": {
                   "type": "string",
