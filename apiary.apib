@@ -20,8 +20,10 @@ codes for unexpected internal server errors.
 
 ## Authentication
 
-All requests must be authenticated using [Basic
-Auth](https://en.wikipedia.org/wiki/Basic_access_authentication#Client_side).
+All requests must be authenticated using either [Basic Auth](https://en.wikipedia.org/wiki/Basic_access_authentication#Client_side) or API token-based authentication.
+If you have been provided with an API token, you should use token-based authentication.
+
+### Basic Auth
 
 With Basic Auth, you have to send the username and password **base64-encoded** in the standard Basic manner, e.g.
 `Authorization: Basic YXBpdGVzdDphcGkgcGFzc3dvcmQgdGVzdA==`.
@@ -35,6 +37,11 @@ Here is some sample code in Python to generate the value of the header:
 >>> print base64.b64encode(username + ':' + password)
 YXBpdGVzdDphcGktdGVzdC1wYXNzd29yZA==
 ```
+
+### API Token
+
+With API token-based authentication, you must include the token in the Authorization header as an API token, e.g.
+`Authorization: token YOUR_API_TOKEN`.
 
 Failed requests will return a 401 HTTP code with `WWW-Authenticate: Basic` response header.
 
