@@ -135,7 +135,28 @@ paths:
       operationId: post-api-v1-company-company_slug-consignments
       requestBody:
         $ref: '#/components/requestBodies/CreateConsignmentRequest'
-      description: 'You can use this API call to create one or more new consignments. In both cases, you have to specify a list in the body.Scurri will do its best to store the data in the database and return a successful message, instead of validating the data against a carrier. That is, the validation process with a carrier is a step performed after a consignment has been created successfully. The reason is that this way Scurri can decouple importing consignment data from allocating it to a specific carrier, each of which has different requirements.What this means in practice is that a success response for this API call does not mean that the consignment has been allocated to a carrier and service successfully.Additionally, most users will want their configured rules to allocate a consignment to a carrier and service. These users should leave the carrier-related fields empty. If any of those are specified in the request, then they will override the allocation made by rules.Rules are always executed against your consignment data during the allocation phase.Another thing to keep in mind is that, in the case of batch creating consignments, Scurri will run any allocation processes asynchronously. As a result, a label will not be available straight away. If your request contains data only for a single consignment then the allocation happens synchronously.If you need a way to associate your internal packages with Scurri packages, please use the key reference that is available for each package.The reference don''t need to be unique per company or per item.Finally, some carriers support enhancements and carrier-specific options which must be specified in the "options" field, in example: Signed Consignments ("signed") or Package Type ("package_type").You can take a look at the GET consignment for the payload of this request.Max field lengths may be carrier dependant.'
+      description: |
+        You can use this API call to create one or more new consignments. In both cases, you have to
+        specify a list in the body.Scurri will do its best to store the data in the database and
+        return a successful message, instead of validating the data against a carrier. That is, the
+        validation process with a carrier is a step performed after a consignment has been created
+        successfully. The reason is that this way Scurri can decouple importing consignment data from
+        allocating it to a specific carrier, each of which has different requirements.What this means
+        in practice is that a success response for this API call does not mean that the consignment
+        has been allocated to a carrier and service successfully.Additionally, most users will want
+        their configured rules to allocate a consignment to a carrier and service. These users should
+        leave the carrier-related fields empty. If any of those are specified in the request, then
+        they will override the allocation made by rules.Rules are always executed against your
+        consignment data during the allocation phase.Another thing to keep in mind is that, in the
+        case of batch creating consignments, Scurri will run any allocation processes asynchronously.
+        As a result, a label will not be available straight away. If your request contains data only
+        for a single consignment then the allocation happens synchronously.If you need a way to
+        associate your internal packages with Scurri packages, please use the key reference that is.
+        available for each package.The reference don''t need to be unique per company or per item.
+        Finally, some carriers support enhancements and carrier-specific options which must be
+        specified in the "options" field, in example: Signed Consignments ("signed") or Package Type
+        ("package_type").You can take a look at the GET consignment for the payload of this request.
+        Max field lengths may be carrier dependant.'
     get:
       summary: Get the list of created consignments
       tags:
@@ -193,7 +214,10 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Consignment'
-      description: 'You can use this API call to update the details of the specified consignment.The API does not support partial updates, you must specify all values when using this API call.Mandatory and optional fields are detailed under the Create a New Consignment call.'
+      description: |
+        You can use this API call to update the details of the specified consignment.The API does not
+        support partial updates, you must specify all values when using this API call.Mandatory and
+        optional fields are detailed under the Create a New Consignment call.'
 servers:
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
