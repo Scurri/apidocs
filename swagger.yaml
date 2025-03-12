@@ -5,13 +5,26 @@ info:
   description: 'The Davidurri Platform API is a RESTful web service that offers import and update functionality for consignments, documents and manifests.  Davidurri have API’s for other stuff. There is a tracking API available for pulling back tracking data, information on this is available on request.'
 tags:
   - name: Carriers
-    description: 'The Carriers API allows you to query Scurri for the carriers that are enabled in your account.The result contains the identifier for each carrier, which you can use in the rest of the API calls, whenever a Carrier needs to be specified. The identifier will never change, so this can be called once to get the values.'
+    description: |
+      The Carriers API allows you to query Scurri for the carriers that are enabled in your account.
+      The result contains the identifier for each carrier, which you can use in the rest of the API 
+      calls, whenever a Carrier needs to be specified. The identifier will never change, so this can
+      be called once to get the values.
   - name: Carrier Services
-    description: 'The CarrierServices API allows you to retrieve a list of services that have been enabled in your account.The result contains the identifier for each service, which you can use in the rest of the API calls, whenever a Service needs to be specified.'
+    description: |
+      The CarrierServices API allows you to retrieve a list of services that have been enabled in your
+      account.The result contains the identifier for each service, which you can use in the rest of
+      the API calls, whenever a Service needs to be specified.
   - name: Warehouses
-    description: 'The Warehouses API allows you to retrieve a list of warehouses that you have access to (within a company).The result contains the identifier for each warehouse, which you can use in the rest of the API calls, whenever a Warehouse needs to be specified.'
+    description: |
+      The Warehouses API allows you to retrieve a list of warehouses that you have access to (within a
+      company).The result contains the identifier for each warehouse, which you can use in the rest of
+      the API calls, whenever a Warehouse needs to be specified.
   - name: Consignments
-    description: 'This group of API calls allow you to interact with your consignments in Scurri. You can list and search through them, create new ones, get their status and print the necessary documentation (labels and custom invoices, when needed).'
+    description: |
+      This group of API calls allow you to interact with your consignments in Scurri. You can list and
+      search through them, create new ones, get their status and print the necessary documentation
+      (labels and custom invoices, when needed).
   - name: Consignment Documents
     description: |
       You can use this API call to get the label and any customs invoice documents required for a specific consignment, if required.Keep in mind that a label will be created for each package of the consignment.
@@ -29,25 +42,25 @@ tags:
       Scurri will return the documents the carrier requires, only if the carrier does require them for the specific consignment.Another thing to note about customs invoice documents is that they can be either in a **6"x4"** size (for thermal printer) or in an **A4** size (for a document printer). Your account can be configured, so that **6"x4"** thermal invoices can be concatenated with the respective label. This makes it easier to send each file to the correct printer. Note that setting documenttype to `application/x-zebra-zpl` only impacts labels, not invoices - they remain PDF as they are A4.
       
       ## ZPL Supported Carriers
-      - An Post	
-      - Colissimo	
-      - Deutsche Post	
+      - An Post  
+      - Colissimo  
+      - Deutsche Post  
       - DPD
-      - DPD Germany	
+      - DPD Germany  
       - DPD Ireland
-      - DX	
+      - DX  
       - Fastway
       - Generic Carrier
       - Hermes
-      - Interlink	
+      - Interlink  
       - ITD Carrier
-      - P2P Trakpak	
-      - ParcelForce	
-      - PostNL	
+      - P2P Trakpak  
+      - ParcelForce  
+      - PostNL  
       - Royal Mail
-      - Spring Global	
-      - TNT	
-      - Tuffnells	
+      - Spring Global  
+      - TNT  
+      - Tuffnells  
       - UKMail
       - Yodel
       
