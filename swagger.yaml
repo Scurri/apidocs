@@ -1,0 +1,710 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: davidurri consignment API
+  description: 'The Davidurri Platform API is a RESTful web service that offers import and update functionality for consignments, documents and manifests.  Davidurri have API’s for other stuff. There is a tracking API available for pulling back tracking data, information on this is available on request.'
+tags:
+  - name: Carriers
+    description: 'The Carriers API allows you to query Scurri for the carriers that are enabled in your account.The result contains the identifier for each carrier, which you can use in the rest of the API calls, whenever a Carrier needs to be specified. The identifier will never change, so this can be called once to get the values.'
+  - name: Carrier Services
+    description: 'The CarrierServices API allows you to retrieve a list of services that have been enabled in your account.The result contains the identifier for each service, which you can use in the rest of the API calls, whenever a Service needs to be specified.'
+  - name: Warehouses
+    description: 'The Warehouses API allows you to retrieve a list of warehouses that you have access to (within a company).The result contains the identifier for each warehouse, which you can use in the rest of the API calls, whenever a Warehouse needs to be specified.'
+  - name: Consignments
+    description: 'This group of API calls allow you to interact with your consignments in Scurri. You can list and search through them, create new ones, get their status and print the necessary documentation (labels and custom invoices, when needed).'
+  - name: Consignment Documents
+    description: |
+      You can use this API call to get the label and any customs invoice documents required for a specific consignment, if required.Keep in mind that a label will be created for each package of the consignment.
+      ## Available label formats
+      The resulting documents are base64-encoded and they can be provided in the following formats:
+      - PDF: One PDF returned with multiple labels concatenated in a single document (one label per page)
+      - PNG: A ZIP file is returned containing all files
+      - X-png-list: Single file PNGs (non-zipped)
+      - ZPL: Can be configured as 230 or 300 DPI resolution. It's also possible to specify the required label resolution or compress the label in the request.
+      
+      
+      Alternative label formats are also available, for example 8"x4". To enable this feature on your account, contact Scurri support. Once enabled the label customisation parameter can be used.
+      ## Customs Invoice Documents
+      
+      Scurri will return the documents the carrier requires, only if the carrier does require them for the specific consignment.Another thing to note about customs invoice documents is that they can be either in a **6"x4"** size (for thermal printer) or in an **A4** size (for a document printer). Your account can be configured, so that **6"x4"** thermal invoices can be concatenated with the respective label. This makes it easier to send each file to the correct printer. Note that setting documenttype to `application/x-zebra-zpl` only impacts labels, not invoices - they remain PDF as they are A4.
+      
+      ## ZPL Supported Carriers
+      - An Post	
+      - Colissimo	
+      - Deutsche Post	
+      - DPD
+      - DPD Germany	
+      - DPD Ireland
+      - DX	
+      - Fastway
+      - Generic Carrier
+      - Hermes
+      - Interlink	
+      - ITD Carrier
+      - P2P Trakpak	
+      - ParcelForce	
+      - PostNL	
+      - Royal Mail
+      - Spring Global	
+      - TNT	
+      - Tuffnells	
+      - UKMail
+      - Yodel
+      
+      
+paths:
+  '/api/v1/company/{company_slug}/carriers/':
+    parameters:
+      - schema:
+          type: string
+        name: company_slug
+        in: path
+        required: true
+        description: the slug of your company
+    get:
+      summary: List all the carriers for the logged in user
+      tags:
+        - Carriers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarrierListResponse'
+      operationId: get-api-v1-company-company_slug-carriers
+      description: List all the carriers for the logged in user
+  '/api/v1/company/{company_slug}/carrierservices/':
+    parameters:
+      - schema:
+          type: string
+        name: company_slug
+        in: path
+        required: true
+    get:
+      summary: List all the carrier services for the logged in user
+      tags:
+        - Carrier Services
+      responses:
+        '200':
+          $ref: '#/components/responses/ServiceListResponse'
+      operationId: get-api-v1-company-company_slug-carrierservices
+      description: List all the carrier services for the logged in user
+  '/api/v1/company/{company_slug}/warehouses/':
+    parameters:
+      - schema:
+          type: string
+        name: company_slug
+        in: path
+        required: true
+    get:
+      summary: List all the warehouses the user has access to
+      tags:
+        - Warehouses
+      responses:
+        '200':
+          $ref: '#/components/responses/WarehouseListResponse'
+      operationId: api-v1-company-company_slug-warehouses
+  '/api/v1/company/{company_slug}/consignments':
+    parameters:
+      - schema:
+          type: string
+        name: company_slug
+        in: path
+        required: true
+    post:
+      summary: Create a New Consignment
+      tags:
+        - Consignments
+      responses:
+        '200':
+          $ref: '#/components/responses/CreateConsignmentResponse'
+      operationId: post-api-v1-company-company_slug-consignments
+      requestBody:
+        $ref: '#/components/requestBodies/CreateConsignmentRequest'
+      description: 'You can use this API call to create one or more new consignments. In both cases, you have to specify a list in the body.Scurri will do its best to store the data in the database and return a successful message, instead of validating the data against a carrier. That is, the validation process with a carrier is a step performed after a consignment has been created successfully. The reason is that this way Scurri can decouple importing consignment data from allocating it to a specific carrier, each of which has different requirements.What this means in practice is that a success response for this API call does not mean that the consignment has been allocated to a carrier and service successfully.Additionally, most users will want their configured rules to allocate a consignment to a carrier and service. These users should leave the carrier-related fields empty. If any of those are specified in the request, then they will override the allocation made by rules.Rules are always executed against your consignment data during the allocation phase.Another thing to keep in mind is that, in the case of batch creating consignments, Scurri will run any allocation processes asynchronously. As a result, a label will not be available straight away. If your request contains data only for a single consignment then the allocation happens synchronously.If you need a way to associate your internal packages with Scurri packages, please use the key reference that is available for each package.The reference don''t need to be unique per company or per item.Finally, some carriers support enhancements and carrier-specific options which must be specified in the "options" field, in example: Signed Consignments ("signed") or Package Type ("package_type").You can take a look at the GET consignment for the payload of this request.Max field lengths may be carrier dependant.'
+    get:
+      summary: Get the list of created consignments
+      tags:
+        - Consignments
+      responses:
+        '200':
+          $ref: '#/components/responses/ConsignmentListResponse'
+      operationId: get-api-v1-company-company_slug-consignments
+  '/api/v1/company/{company_slug}/consignment/{consignment_id}':
+    parameters:
+      - schema:
+          type: string
+        name: company_slug
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: consignment_id
+        in: path
+        required: true
+    get:
+      summary: Get a single consignment
+      tags:
+        - Consignments
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consignment'
+      operationId: get-api-v1-company-company_slug-consignment-consignment_id
+    delete:
+      summary: Cancel a single consignment
+      tags:
+        - Consignments
+      responses:
+        '204':
+          description: No Content
+      operationId: delete-api-v1-company-company_slug-consignment-consignment_id
+    put:
+      summary: Update the specified consignment
+      tags: 
+        - Consignments
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consignment'
+      operationId: put-api-v1-company-company_slug-consignment-consignment_id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Consignment'
+      description: 'You can use this API call to update the details of the specified consignment.The API does not support partial updates, you must specify all values when using this API call.Mandatory and optional fields are detailed under the Create a New Consignment call.'
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: 'https://virtserver.swaggerhub.com/davidurri/consignment-api/1.0.0'
+components:
+  schemas:
+    CarrierListResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          identifier:
+            type: string
+          name:
+            type: string
+      x-examples:
+        Example 1:
+          - identifier: Generic Carrier
+            name: Generic Carrier
+    Service:
+      type: object
+      x-examples:
+        Example 1:
+          carrier_id: Generic Carrier
+          identifier: Generic Carrier|Generic International Service GCINT
+          name: Generic International Service
+      title: ServiceResponse
+      properties:
+        carrier_id:
+          type: string
+        identifier:
+          type: string
+        name:
+          type: string
+    ServiceWithEnhancementsListResponse:
+      type: array
+      items:
+        allOf:
+          - $ref: '#/components/schemas/Service'
+          - properties:
+              enhancements:
+                type: array
+                items:
+                  type: object
+              package_types:
+                type: array
+                items:
+                  type: object
+        type: object
+      x-examples:
+        Example 1:
+          - carrier_id: string
+            identifier: string
+            name: string
+            enhancements:
+              - {}
+            package_types:
+              - {}
+    Warehouse:
+      type: object
+      properties:
+        identifier:
+          type: string
+        name:
+          type: string
+      x-examples:
+        Example 1:
+          identifier: api-test-company|Test Warehouse
+          name: Test Warehouse
+    Consignment:
+      type: object
+      x-examples:
+        Example 1:
+          carrier: Generic Carrier
+          consignment_number: null
+          create_date: '2016-03-28T11:53:31+0000'
+          expected_delivery_date: null
+          currency: GBP
+          current_status:
+            rejection_reason: null
+            short_form: Allocated
+            status: Carrier and service allocated
+          delivery_instructions: ''
+          identifier: 8a12630db404424b943e131ce4ee3976
+          invoice:
+            incoterm: ''
+          options:
+            package_type: null
+          order_number: '8384832'
+          order_value: null
+          packages:
+            - description: Jeans
+              reference: CustomerPackageReference1
+              height: 0.5
+              items:
+                - country_of_origin: GB
+                  harmonisation_code: '5201'
+                  name: Jeans
+                  quantity: 1
+                  sku: 822 JEANS
+                  value: 25.55
+                  weight: 1
+              length: 10
+              tracking_number: null
+              width: 12.2
+          recipient:
+            address:
+              address1: Innovation House
+              address2: The Bullring
+              address3: ''
+              city: Wexford
+              country: IE
+              postcode: Y35 DW6E
+              state: Wexford
+              store_code: ''
+            company_name: Scurri
+            contact_number: 072 8848292234
+            email_address: john@scurri.com
+            first_name: ''
+            last_name: John Doe
+            name: John Doe
+          rules_package_type: 'Shipment 44147 : None'
+          service: Generic International Service
+          service_id: Generic Carrier|Generic International Service GCINT
+          shipping_method: ''
+          tracking_url: ''
+          warehouse_id: api-test-company|Test Warehouse
+      properties:
+        carrier:
+          type: string
+        consignment_number:
+          type: string
+          nullable: true
+        create_date:
+          type: string
+        expected_delivery_date:
+          type: string
+          nullable: true
+        currency:
+          type: string
+        current_status:
+          type: object
+          properties:
+            rejection_reason:
+              type: string
+              nullable: true
+            short_form:
+              type: string
+            status:
+              type: string
+        delivery_instructions:
+          type: string
+        identifier:
+          type: string
+        invoice:
+          type: object
+          properties:
+            incoterm:
+              type: string
+        options:
+          type: object
+          properties:
+            package_type:
+              type: string
+              nullable: true
+            signed:
+              type: string
+              x-stoplight:
+                id: q8dhz3848cunz
+        order_number:
+          type: string
+        order_value:
+          type: number
+          nullable: true
+        packages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Package'
+        recipient:
+          $ref: '#/components/schemas/Recipient'
+        rules_package_type:
+          type: string
+        service:
+          type: string
+        service_id:
+          type: string
+        shipping_method:
+          type: string
+        tracking_url:
+          type: string
+        warehouse_id:
+          type: string
+    Item:
+      type: object
+      properties:
+        name:
+          type: string
+        quantity:
+          type: integer
+        sku:
+          type: string
+        country_of_origin:
+          type: string
+        harmonisation_code:
+          type: string
+        fabric_content:
+          type: string
+        weight:
+          type: integer
+        value:
+          type: number
+        taric_condition:
+          type: string
+      x-examples:
+        Example 1:
+          name: Jeans
+          quantity: 1
+          sku: 822 JEANS
+          country_of_origin: GB
+          harmonisation_code: '5201'
+          fabric_content: cotton
+          weight: 1
+          value: 25.55
+          taric_condition: YX55
+    Package:
+      title: Package
+      type: object
+      properties:
+        description:
+          type: string
+        reference:
+          type: string
+          x-stoplight:
+            id: iyqww9oq0s6dd
+        width:
+          type: number
+          x-stoplight:
+            id: c207bmqrskbfg
+        height:
+          type: number
+          x-stoplight:
+            id: ta01wdlch2bs0
+        length:
+          type: number
+          x-stoplight:
+            id: nzqbsxgwlxnzk
+        weight:
+          type: number
+          x-stoplight:
+            id: nc6wjekf5xk5t
+        items:
+          type: array
+          x-stoplight:
+            id: cba5isstg2968
+          items:
+            $ref: '#/components/schemas/Item'
+    Address:
+      type: object
+      properties:
+        address1:
+          type: string
+        address2:
+          type: string
+        address3:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postcode:
+          type: string
+        country:
+          type: string
+        store_code:
+          type: string
+      x-examples:
+        Example 1:
+          address1: 77  Crown Street
+          address2: ''
+          address3: ''
+          city: London
+          state: ''
+          postcode: SW1H 8ZW
+          country: GB
+          store_code: ''
+    Recipient:
+      type: object
+      x-examples:
+        Example 1:
+          name: John Doe
+          first_name: ''
+          last_name: ''
+          company_name: ''
+          email_address: johndoe@johndoe.com
+          contact_number: '07827904687'
+          tax_identifier: '123456'
+          eori_number: GB123456789123
+      properties:
+        name:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        company_name:
+          type: string
+        email_address:
+          type: string
+        contact_number:
+          type: string
+        tax_identifier:
+          type: string
+        eori_number:
+          type: string
+        address:
+          $ref: '#/components/schemas/Address'
+    CustomAttributes:
+      type: object
+      properties:
+        override_sender_name:
+          type: string
+        override_sender_eori:
+          type: string
+        override_sender_address1:
+          type: string
+        override_sender_address2:
+          type: string
+        override_sender_address3:
+          type: string
+        override_sender_city:
+          type: string
+        override_sender_state:
+          type: string
+        override_sender_postcode:
+          type: string
+        override_sender_country:
+          type: string
+        override_sender_email:
+          type: string
+        override_sender_phone:
+          type: string
+      x-examples:
+        Example 1:
+          override_sender_name: TestCo
+          override_sender_eori: 0000123123GB
+          override_sender_address1: 71 Test Street
+          override_sender_address2: Test address 2 line
+          override_sender_address3: Test address 3 line
+          override_sender_city: Leeds
+          override_sender_state: West Yorkshire
+          override_sender_postcode: BD1 1AA
+          override_sender_country: GB
+          override_sender_email: test@example.com
+          override_sender_phone: +44 7975 777 666
+    ExportCustoms:
+      type: object
+      properties:
+        reason_for_export:
+          type: string
+        shipping_cost:
+          type: string
+        ioss_number:
+          type: string
+      x-examples:
+        Example 1:
+          reason_for_export: merchandise
+          shipping_cost: '10.00'
+          ioss_number: IMIRL1234567
+  requestBodies:
+    CreateConsignmentRequest:
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/Consignment'
+              - type: object
+                properties:
+                  custom_attributes:
+                    $ref: '#/components/schemas/CustomAttributes'
+                  options:
+                    type: object
+                    x-stoplight:
+                      id: ijon4c4ivvow0
+                  invoice:
+                    type: object
+                    x-stoplight:
+                      id: sq67m9m16dko0
+                    properties:
+                      icoterm:
+                        type: string
+                        x-stoplight:
+                          id: woxobtry8ypal
+                  export_customs:
+                    $ref: '#/components/schemas/ExportCustoms'
+          examples:
+            Example 1:
+              value:
+                carrier: string
+                consignment_number: string
+                create_date: string
+                expected_delivery_date: string
+                currency: string
+                current_status:
+                  rejection_reason: string
+                  short_form: string
+                  status: string
+                delivery_instructions: string
+                identifier: string
+                invoice:
+                  incoterm: string
+                  icoterm: string
+                options:
+                  package_type: string
+                order_number: string
+                order_value: 0
+                packages:
+                  - description: string
+                    reference: string
+                    width: 0
+                    height: 0
+                    length: 0
+                    weight: 0
+                    items:
+                      - name: string
+                        quantity: 0
+                        sku: string
+                        country_of_origin: string
+                        harmonisation_code: string
+                        fabric_content: string
+                        weight: 0
+                        value: 0
+                        taric_condition: string
+                recipient:
+                  name: string
+                  first_name: string
+                  last_name: string
+                  company_name: string
+                  email_address: string
+                  contact_number: string
+                  tax_identifier: string
+                  eori_number: string
+                  address:
+                    address1: string
+                    address2: string
+                    address3: string
+                    city: string
+                    state: string
+                    postcode: string
+                    country: string
+                    store_code: string
+                rules_package_type: string
+                service: string
+                service_id: string
+                shipping_method: string
+                tracking_url: string
+                warehouse_id: string
+                custom_attributes:
+                  override_sender_name: string
+                  override_sender_eori: string
+                  override_sender_address1: string
+                  override_sender_address2: string
+                  override_sender_address3: string
+                  override_sender_city: string
+                  override_sender_state: string
+                  override_sender_postcode: string
+                  override_sender_country: string
+                  override_sender_email: string
+                  override_sender_phone: string
+                export_customs:
+                  reason_for_export: string
+                  shipping_cost: string
+                  ioss_number: string
+  responses:
+    CreateConsignmentResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errors:
+                type: object
+                properties: {}
+              success:
+                type: array
+                items:
+                  type: string
+            x-examples:
+              Example 1:
+                errors: {}
+                success:
+                  - 8a12630db404424b943e131ce4ee3976
+    WarehouseListResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Warehouse'
+    ConsignmentListResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              count:
+                type: string
+              next:
+                type: string
+                x-stoplight:
+                  id: bxrvg9c4745z1
+              results:
+                type: array
+                x-stoplight:
+                  id: 7lxyzcg7xli8f
+                items:
+                  $ref: '#/components/schemas/Consignment'
+    ServiceListResponse:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Service'
