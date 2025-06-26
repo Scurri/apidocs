@@ -1,0 +1,983 @@
+openapi: 3.0.3
+info:
+  title: Scurri Platform API
+  version: 1.0.0
+  description: |
+    This API allows you to manage consignments, including creating, updating, and retrieving details about shipments.
+    You can also manage packages within consignments and retrieve associated documents such as labels and customs invoices.
+tags:
+  - name: Consignments
+    description: |
+      This group of API calls allow you to interact with your consignments in Scurri. You can list and
+      search through them, create new ones, get their status and print the necessary documentation
+      (labels and custom invoices, when needed).
+  - name: Consignment Documents
+    description: |
+      You can use this API call to get the label and any customs invoice documents required for a specific consignment, if required.Keep in mind that a label will be created for each package of the consignment.
+      ## Available label formats
+      The resulting documents are base64-encoded and they can be provided in the following formats:
+      - PDF: One PDF returned with multiple labels concatenated in a single document (one label per page)
+      - PNG: A ZIP file is returned containing all files
+      - X-png-list: Single file PNGs (non-zipped)
+      - ZPL: Can be configured as 230 or 300 DPI resolution. It's also possible to specify the required label resolution or compress the label in the request.
+
+
+      Alternative label formats are also available, for example 8"x4". To enable this feature on your account, contact Scurri support. Once enabled the label customisation parameter can be used.
+      ## Customs Invoice Documents
+
+      Scurri will return the documents the carrier requires, only if the carrier does require them for the specific consignment.Another thing to note about customs invoice documents is that they can be either in a **6"x4"** size (for thermal printer) or in an **A4** size (for a document printer). Your account can be configured, so that **6"x4"** thermal invoices can be concatenated with the respective label. This makes it easier to send each file to the correct printer. Note that setting documenttype to `application/x-zebra-zpl` only impacts labels, not invoices - they remain PDF as they are A4.
+
+      ## ZPL Supported Carriers
+      - An Post  
+      - Colissimo  
+      - Deutsche Post  
+      - DPD
+      - DPD Germany  
+      - DPD Ireland
+      - DX  
+      - Fastway
+      - Generic Carrier
+      - Hermes
+      - Interlink  
+      - ITD Carrier
+      - P2P Trakpak  
+      - ParcelForce  
+      - PostNL  
+      - Royal Mail
+      - Spring Global  
+      - TNT  
+      - Tuffnells  
+      - UKMail
+      - Yodel
+servers:
+  - url: https://{host}/_api/v1/company/{company_slug}
+    variables:
+      host:
+        default: api.example.com
+        description: The base domain or host for the API (e.g., api.example.com).
+      company_slug:
+        default: example-company
+        description: Unique slug identifier for the company, used to scope API requests to a specific company account.
+paths:
+  /consignments/:
+    post:
+      tags:
+        - Consignments
+      summary: Import a new dynamic consignment
+      description: Creates a new dynamic consignment (shipment) for the company. The consignment can be allocated or unallocated, domestic or international.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConsignmentImportRequest"
+      responses:
+        "201":
+          description: Consignment(s) created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: array
+                    description: List of external identifiers for created consignments.
+                    items:
+                      type: string
+                  errors:
+                    type: array
+                    description: List of error messages for consignments that failed to be created.
+                    items:
+                      type: string
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message.
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Validation error message.
+                  details:
+                    type: array
+                    items:
+                      type: string
+                    description: List of validation error details.
+      security:
+        - TokenAuth: []
+  /consignment/{shipmentIdentifier}/:
+    get:
+      tags:
+        - Consignments
+      summary: Get consignment details
+      description: Retrieves details of a specific consignment (shipment).
+      parameters:
+        - $ref: "#/components/parameters/shipmentIdentifier"
+      responses:
+        "200":
+          description: Consignment details successfully retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConsignmentResponse"
+        "401":
+          description: Permission denied (user does not have access to this shipment)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Permission denied error message.
+        "404":
+          description: Consignment not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Not found error message.
+        "500":
+          description: Internal server error (unexpected failure during serialization)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Internal server error message.
+      security:
+        - TokenAuth: []
+    put:
+      tags:
+        - Consignments
+      summary: Update a consignment
+      description: Updates a consignment. Can be used to allocate or unallocate the consignment.
+      parameters:
+        - $ref: "#/components/parameters/shipmentIdentifier"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConsignmentUpdateRequest"
+      responses:
+        "200":
+          description: Consignment updated successfully. Returns the updated consignment details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConsignmentResponse"
+        "400":
+          description: Invalid request or validation error (e.g. consignment already manifested/printed, invalid payload)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Error message describing the validation or request error.
+        "401":
+          description: Permission denied (user does not have access to this shipment)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Permission denied error message.
+        "404":
+          description: Consignment not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Not found error message.
+        "500":
+          description: Internal server error (unexpected failure during update)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Internal server error message.
+      security:
+        - TokenAuth: []
+  /consignment/{shipmentIdentifier}/statuses/:
+    get:
+      tags:
+        - Consignments
+      summary: Get consignment status history
+      description: Retrieves the status history for a consignment.
+      parameters:
+        - $ref: "#/components/parameters/shipmentIdentifier"
+      responses:
+        "200":
+          description: Successfully retrieved consignment status history.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statuses:
+                    type: array
+                    description: List of status history entries for the consignment.
+                    items:
+                      $ref: "#/components/schemas/ShipmentStatusHistory"
+        "400":
+          description: Only dynamic shipment is supported or other validation error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: List of error messages.
+                    items:
+                      type: string
+        "404":
+          description: Consignment not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Not found error message.
+        "500":
+          description: Internal server error (unexpected failure during retrieval)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Internal server error message.
+      security:
+        - TokenAuth: []
+    post:
+      tags:
+        - Consignments
+      summary: Update consignment status
+      description: Updates the status of a consignment (e.g., set as packing or printed).
+      parameters:
+        - $ref: "#/components/parameters/shipmentIdentifier"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConsignmentStatusUpdateRequest"
+      responses:
+        "200":
+          description: Consignment status updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: array
+                    description: List containing the updated status key for the consignment.
+                    items:
+                      type: string
+        "400":
+          description: Only dynamic shipment is supported, invalid status, or validation error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: List of error messages.
+                    items:
+                      type: string
+        "404":
+          description: Consignment not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Not found error message.
+      security:
+        - TokenAuth: []
+  /consignment/{shipmentIdentifier}/documents/:
+    get:
+      tags:
+        - Consignment Documents
+      summary: Get consignment documents
+      description: Retrieves documents (e.g., labels) for a consignment. Supports filtering by document type and invoice quantity.
+      parameters:
+        - $ref: "#/components/parameters/shipmentIdentifier"
+        - in: query
+          name: documenttype
+          schema:
+            type: string
+          description: Document MIME type (e.g., application/x-zebra-zpl)
+        - in: query
+          name: invoice_quantity
+          schema:
+            type: integer
+          description: Number of invoices to include
+      responses:
+        "200":
+          description: Successfully retrieved consignment label and invoice documents.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  labels:
+                    type: string
+                    format: byte
+                    description: Base64-encoded label data for the consignment. Format depends on the requested document type (PDF, PNG, ZPL, etc.).
+                  invoices:
+                    type: string
+                    format: byte
+                    description: Base64-encoded invoice data for the consignment, if required by the carrier/destination. May be null if not applicable.
+        "400":
+          description: Invalid request or validation error (e.g. consignment not ready for printing, invalid parameters)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Error message describing the validation or request error.
+        "401":
+          description: Permission denied (user does not have access to this shipment)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Permission denied error message.
+        "404":
+          description: Consignment not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Not found error message.
+        "408":
+          description: Label generation timed out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Timeout error message.
+        "409":
+          description: Concurrency error (conflict)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Conflict error message.
+        "500":
+          description: Internal server error (unexpected failure during document generation)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Internal server error message.
+      security:
+        - TokenAuth: []
+  /consignment/{shipmentIdentifier}/packages/:
+    post:
+      tags:
+        - Consignments
+      summary: Add a package to a consignment
+      description: Adds a new package to a consignment. Optionally specify document type for label generation.
+      parameters:
+        - $ref: "#/components/parameters/shipmentIdentifier"
+        - in: query
+          name: documenttype
+          schema:
+            type: string
+          description: Document MIME type (e.g., application/x-zebra-zpl)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PackageAddRequest"
+      responses:
+        "201":
+          description: Package added successfully to the consignment.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PackageAddResponse"
+        "400":
+          description: Only dynamic shipment in packing status are supported, or validation error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: List of error messages.
+                    items:
+                      type: string
+        "404":
+          description: Consignment not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Not found error message.
+        "409":
+          description: Conflict (another request is processing this shipment or package)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: List of error messages.
+                    items:
+                      type: string
+      security:
+        - TokenAuth: []
+  /consignment/{shipmentIdentifier}/packages/{packageReference}/:
+    get:
+      tags:
+        - Consignments
+      summary: Get package details
+      description: Retrieves details of a specific package in a consignment.
+      parameters:
+        - $ref: "#/components/parameters/shipmentIdentifier"
+        - $ref: "#/components/parameters/packageReference"
+      responses:
+        "200":
+          description: Package details successfully retrieved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PackageResponse"
+        "401":
+          description: Permission denied (user does not have access to this shipment or package)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Permission denied error message.
+        "404":
+          description: Package or consignment not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Not found error message.
+      security:
+        - TokenAuth: []
+    delete:
+      tags:
+        - Consignments
+      summary: Remove a package from a consignment
+      description: Removes a package from a consignment.
+      parameters:
+        - $ref: "#/components/parameters/shipmentIdentifier"
+        - $ref: "#/components/parameters/packageReference"
+      responses:
+        "204":
+          description: Package cancelled successfully. No content is returned.
+        "400":
+          description: Only dynamic shipment in packing status are supported, or cancellation error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: List of error messages.
+                    items:
+                      type: string
+        "404":
+          description: Package or consignment not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Not found error message.
+      security:
+        - TokenAuth: []
+  /consignment/{shipmentIdentifier}/packages/{packageReference}/documents:
+    get:
+      tags:
+        - Consignment Documents
+      summary: Get package documents
+      description: Retrieves documents (e.g., labels) for a specific package. Supports filtering by document type.
+      parameters:
+        - $ref: "#/components/parameters/shipmentIdentifier"
+        - $ref: "#/components/parameters/packageReference"
+        - in: query
+          name: documenttype
+          schema:
+            type: string
+          description: Document MIME type (e.g., application/x-zebra-zpl)
+      responses:
+        "200":
+          description: Successfully retrieved package label document.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  labels:
+                    type: string
+                    format: byte
+                    description: Base64-encoded label data for the package. Format depends on the requested document type (PDF, PNG, ZPL, etc.).
+        "400":
+          description: Validation error or label not available.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: List of error messages.
+                    items:
+                      type: string
+        "404":
+          description: Package or consignment not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  detail:
+                    type: string
+                    description: Not found error message.
+        "409":
+          description: Conflict (e.g. ConsignmentStatusError)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: List of error messages.
+                    items:
+                      type: string
+        "500":
+          description: Internal server error (unexpected failure during label generation)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    description: List of error messages.
+                    items:
+                      type: string
+      security:
+        - TokenAuth: []
+components:
+  securitySchemes:
+    TokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication. Use 'token <your_token>' as the value.
+  parameters:
+    shipmentIdentifier:
+      name: shipmentIdentifier
+      in: path
+
+      schema:
+        type: string
+      description: Unique identifier for the consignment (shipment).
+    packageReference:
+      name: packageReference
+      in: path
+
+      schema:
+        type: string
+      description: Unique reference for the package within the consignment.
+  schemas:
+    ConsignmentBase:
+      type: object
+      description: Common fields for consignment creation and update.
+      properties:
+        identifier:
+          type: string
+          description: Unique identifier for the consignment (shipment).
+          minLength: 1
+          maxLength: 64
+        is_dynamic:
+          type: string
+          description: Indicates if the consignment is dynamic. Usually 'True'.
+          enum: ["True"]
+        order_number:
+          type: string
+          description: Order number associated with the consignment.
+          minLength: 1
+          maxLength: 64
+        create_date:
+          type: string
+          format: date-time
+          description: Date and time when the consignment was created.
+        expected_delivery_date:
+          type: string
+          format: date
+          description: Expected delivery date for the consignment.
+        carrier:
+          type: string
+          description: Carrier name or code.
+          maxLength: 64
+        service_id:
+          type: string
+          description: Service identifier (e.g., carrier and service name).
+          maxLength: 128
+        warehouse_id:
+          type: string
+          description: Warehouse identifier.
+          maxLength: 64
+        shipping_method:
+          type: string
+          description: Shipping method.
+          maxLength: 64
+        shipping_date:
+          type: string
+          description: Shipping date.
+        order_value:
+          type: number
+          description: Value of the order.
+          minimum: 0
+        currency:
+          type: string
+          description: Currency code (e.g., EUR, GBP).
+          minLength: 3
+          maxLength: 3
+        delivery_instructions:
+          type: string
+          description: Delivery instructions for the carrier.
+          maxLength: 256
+        custom_field_1:
+          type: string
+          description: Custom field 1 for additional data.
+          maxLength: 128
+        custom_field_2:
+          type: string
+          description: Custom field 2 for additional data.
+          maxLength: 128
+        recipient:
+          type: object
+          required:
+            - name
+            - address
+          description: Recipient details.
+          properties:
+            name:
+              type: string
+              description: Full name of the recipient.
+              minLength: 1
+              maxLength: 128
+            first_name:
+              type: string
+              description: First name of the recipient.
+              maxLength: 64
+            last_name:
+              type: string
+              description: Last name of the recipient.
+              maxLength: 64
+            company_name:
+              type: string
+              description: Company name of the recipient.
+              maxLength: 128
+            email_address:
+              type: string
+              description: Email address of the recipient.
+              format: email
+              maxLength: 128
+            contact_number:
+              type: string
+              description: Contact number of the recipient.
+              maxLength: 32
+            tax_identifier:
+              type: string
+              description: Tax identifier for the recipient.
+              maxLength: 32
+            eori_number:
+              type: string
+              description: EORI number for customs.
+              maxLength: 32
+            address:
+              type: object
+              required:
+                - address1
+                - city
+                - postcode
+                - country
+              description: Recipient address details.
+              properties:
+                address1:
+                  type: string
+                  description: Address line 1.
+                  minLength: 1
+                  maxLength: 128
+                address2:
+                  type: string
+                  description: Address line 2.
+                  maxLength: 128
+                address3:
+                  type: string
+                  description: Address line 3.
+                  maxLength: 128
+                city:
+                  type: string
+                  description: City.
+                  minLength: 1
+                  maxLength: 64
+                state:
+                  type: string
+                  description: State or region.
+                  maxLength: 64
+                postcode:
+                  type: string
+                  description: Postal code.
+                  minLength: 1
+                  maxLength: 16
+                country:
+                  type: string
+                  description: Country code (ISO 2-letter).
+                  minLength: 2
+                  maxLength: 2
+                store_code:
+                  type: string
+                  description: Store code if applicable.
+                  maxLength: 32
+        export_customs:
+          type: object
+          description: Export customs information.
+          properties:
+            reason_for_export:
+              type: string
+              description: Reason for export (e.g., merchandise).
+              maxLength: 64
+            shipping_cost:
+              type: string
+              description: Shipping cost for customs declaration.
+              maxLength: 16
+            ioss_number:
+              type: string
+              description: IOSS number for international shipments.
+              maxLength: 32
+    ConsignmentImportRequest:
+      allOf:
+        - $ref: "#/components/schemas/ConsignmentBase"
+      required:
+        - is_dynamic
+        - order_number
+        - create_date
+        - recipient
+      description: Request body for importing a new consignment.
+    ConsignmentUpdateRequest:
+      allOf:
+        - $ref: "#/components/schemas/ConsignmentBase"
+      required:
+        - is_dynamic
+        - order_number
+        - create_date
+        - recipient
+      description: Request body for updating a consignment. Fields are based on update_domestic_allocated.json and update_domestic_unallocated.json.
+    ConsignmentStatusUpdateRequest:
+      type: object
+      description: Request body for updating consignment status (e.g., set as packing or printed).
+      properties:
+        status_action:
+          type: string
+          description: Status action to apply (e.g., 'Packing - Packages can be added', 'Printed - ready to manifest').
+    PackageAddRequest:
+      type: object
+      description: Request body for adding a package to a consignment. Fields are based on add_package.json.
+      properties:
+        reference:
+          type: string
+          description: Unique reference for the package.
+        height:
+          type: number
+          description: Height of the package (units as per system configuration).
+        width:
+          type: number
+          description: Width of the package (units as per system configuration).
+        length:
+          type: number
+          description: Length of the package (units as per system configuration).
+        weight:
+          type: number
+          description: Weight of the package (units as per system configuration).
+        items:
+          type: array
+          description: List of items in the package.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: Name of the item.
+              sku:
+                type: string
+                description: Stock keeping unit (SKU) of the item.
+              quantity:
+                type: integer
+                description: Quantity of the item.
+              weight:
+                type: number
+                description: Weight of the item.
+              value:
+                type: string
+                description: Value of the item.
+              country_of_origin:
+                type: string
+                description: Country of origin (ISO 2-letter code).
+        properties:
+          type: object
+          description: Additional custom properties for the package.
+          additionalProperties:
+            type: string
+    ConsignmentResponse:
+      type: object
+      description: Serialized consignment details as returned by ConsignmentSerializer.
+      properties:
+        identifier:
+          type: string
+          description: Unique identifier for the consignment.
+    ShipmentStatusHistory:
+      type: object
+      description: Status history entry for a consignment.
+      properties:
+        status:
+          type: string
+          description: Status name or code.
+    PackageAddResponse:
+      type: object
+      description: Response after successfully adding a package to a consignment.
+      properties:
+        labels:
+          type: string
+          description: Labels for the package.
+    PackageResponse:
+      type: object
+      description: Serialized package details as returned by PackageSerializer.
+      properties:
+        description:
+          type: string
+          description: Description of the package contents.
+        reference:
+          type: string
+          description: Unique reference for the package.
+        tracking_number:
+          type: string
+          description: Tracking number for the package (if available).
+        width:
+          type: number
+          format: float
+          description: Width of the package in centimetres.
+        height:
+          type: number
+          format: float
+          description: Height of the package in centimetres.
+        length:
+          type: number
+          format: float
+          description: Length of the package in centimetres.
+        weight:
+          type: number
+          format: float
+          description: Weight of the package in kilograms.
+        items:
+          type: array
+          description: Items contained in the package.
+          items:
+            $ref: "#/components/schemas/PackageItem"
+        properties:
+          type: object
+          description: Custom properties for the package (if enabled for the account).
+          additionalProperties:
+            type: string
+        tracking_url:
+          type: string
+          description: Tracking URL for the package (if enabled for the account).
+    PackageItem:
+      type: object
+      description: Item contained in the package.
+      properties:
+        name:
+          type: string
+          description: Name of the item.
+        sku:
+          type: string
+          description: Stock keeping unit (SKU) of the item.
+        quantity:
+          type: integer
+          description: Quantity of the item.
+        weight:
+          type: number
+          format: float
+          description: Weight of the item in kilograms.
+        value:
+          type: string
+          description: Value of the item.
+        country_of_origin:
+          type: string
+          description: Country of origin (ISO 2-letter code).
