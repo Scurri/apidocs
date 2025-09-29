@@ -2344,7 +2344,8 @@ consignment.
 
 #### Available label formats
 
-The resulting documents are base64-encoded and they can be provided in the following formats:
+The resulting documents are returned as strings within the JSON response. These are plaintext in the case of ZPL labels, all other formats are base64-encoded binary files. 
+Labels can be provided in the following formats:
 - PDF: One PDF returned with multiple labels concatenated in a single document (one label per page)
 - PNG: A ZIP file is returned containing all files
 - X-png-list: Single file PNGs (non-zipped)
@@ -2417,7 +2418,7 @@ Note that setting documenttype to `application/x-zebra-zpl` only impacts labels,
             {
               "properties": {
                 "labels": {
-                  "description": "Base64-encoded string containing raw label bytes.",
+                  "description": "Plaintext or Base64-encoded string containing label.",
                   "type": "string",
                   "required": true
                 },
